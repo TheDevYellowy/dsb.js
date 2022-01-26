@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Packages
 node_modules/
 
@@ -5,11 +6,38 @@ node_modules/
 logs/
 *.log
 npm-debug.log*
+=======
+<<<<<<< HEAD
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+=======
+# Packages
+node_modules/
+
+# Log files
+logs/
+*.log
+npm-debug.log*
+>>>>>>> 8086435 (copied files from private repo)
+>>>>>>> 189ce24 (copied files from private repo)
 
 # Runtime data
 pids
 *.pid
 *.seed
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+*.pid.lock
+>>>>>>> 189ce24 (copied files from private repo)
 
 # Env
 .env
@@ -24,7 +52,56 @@ deploy/deploy_key.pub
 dist/
 docs/docs.json
 
+<<<<<<< HEAD
+=======
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+# Comment in the public line in if your project uses Gatsby and *not* Next.js
+# https://nextjs.org/blog/next-9-1#public-directory-support
+# public
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+=======
+
+# Env
+.env
+test/auth.json
+test/auth.js
+docs/deploy/deploy_key
+docs/deploy/deploy_key.pub
+deploy/deploy_key
+deploy/deploy_key.pub
+
+# Dist
+dist/
+docs/docs.json
+
+>>>>>>> 189ce24 (copied files from private repo)
 # Miscellaneous
 .tmp/
 .idea/
 .DS_Store
+<<<<<<< HEAD
+=======
+>>>>>>> 8086435 (copied files from private repo)
+>>>>>>> 189ce24 (copied files from private repo)
