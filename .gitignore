@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-# Packages
-node_modules/
-
-# Log files
-logs/
-*.log
-npm-debug.log*
-=======
-<<<<<<< HEAD
 # Logs
 logs
 *.log
@@ -18,7 +8,7 @@ lerna-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-=======
+
 # Packages
 node_modules/
 
@@ -26,18 +16,12 @@ node_modules/
 logs/
 *.log
 npm-debug.log*
->>>>>>> 8086435 (copied files from private repo)
->>>>>>> 189ce24 (copied files from private repo)
 
 # Runtime data
 pids
 *.pid
 *.seed
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
 *.pid.lock
->>>>>>> 189ce24 (copied files from private repo)
 
 # Env
 .env
@@ -52,8 +36,6 @@ deploy/deploy_key.pub
 dist/
 docs/docs.json
 
-<<<<<<< HEAD
-=======
 # Next.js build output
 .next
 
@@ -81,7 +63,6 @@ dist
 
 # TernJS port file
 .tern-port
-=======
 
 # Env
 .env
@@ -92,16 +73,7 @@ docs/deploy/deploy_key.pub
 deploy/deploy_key
 deploy/deploy_key.pub
 
-# Dist
-dist/
-docs/docs.json
-
->>>>>>> 189ce24 (copied files from private repo)
 # Miscellaneous
 .tmp/
 .idea/
 .DS_Store
-<<<<<<< HEAD
-=======
->>>>>>> 8086435 (copied files from private repo)
->>>>>>> 189ce24 (copied files from private repo)
