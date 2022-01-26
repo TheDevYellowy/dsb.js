@@ -1,0 +1,24 @@
+{
+  "name": "@echothediscorddev/discord.js-selfbot",
+  "version": "0.0.0",
+  "description": "A unofficial discord.js fork for creating selfbots",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheDevYellowy/discord.js-selfbot.git"
+  },
+  "keywords": [
+    "discord.js",
+    "selfbot",
+    "djs"
+  ],
+  "author": "Echo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TheDevYellowy/discord.js-selfbot/issues"
+  },
+  "homepage": "https://github.com/TheDevYellowy/discord.js-selfbot#readme"
+}
