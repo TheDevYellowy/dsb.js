@@ -20,5 +20,15 @@
   "bugs": {
     "url": "https://github.com/TheDevYellowy/discord.js-selfbot/issues"
   },
-  "homepage": "https://github.com/TheDevYellowy/discord.js-selfbot#readme"
+  "homepage": "https://github.com/TheDevYellowy/discord.js-selfbot#readme",
+  "dependencies": {
+    "@discordjs/collection": "^0.5.0",
+    "@sapphire/async-queue": "^1.1.9",
+    "@types/node-fetch": "^3.0.3",
+    "@types/ws": "^8.2.2",
+    "discord-api-types": "^0.26.1",
+    "form-data": "^4.0.0",
+    "node-fetch": "^3.2.0",
+    "ws": "^8.4.2"
+  }
 }

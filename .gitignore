@@ -11,6 +11,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Packages
 node_modules/
+djs/
 
 # Log files
 logs/
@@ -66,8 +67,7 @@ dist
 
 # Env
 .env
-test/auth.json
-test/auth.js
+test/
 docs/deploy/deploy_key
 docs/deploy/deploy_key.pub
 deploy/deploy_key
