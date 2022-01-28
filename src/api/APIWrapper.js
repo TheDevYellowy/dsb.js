@@ -1,5 +1,5 @@
 const request = require('node-fetch');
-const {} = require('../util/Constants');
+const { headers } = require('../util/Constants');
 
 class Wrapper {
     constructor(client) {
@@ -11,14 +11,21 @@ class Wrapper {
             var data = {};
             if(body !== null) {
                 if(typeof body == 'object') {
-                    data = {'data': JSON.stringify(body)}
+                    data = JSON.stringify(body)
                 } else {
-                    data = {'data': body}
+                    data = body
                 }
             }
 
             if(timeout == null) data['timeout'] = timeout;
-            
+            const res = await reques(`https://discord.com/api/v9/${url}`, {
+							method: method,
+							body: data,
+							headers: headers
+						})
+
+						if(res) return res.json();
+						
         }
     }
 
