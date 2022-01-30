@@ -1,5 +1,5 @@
 {
-  "name": "@echothediscorddev/discord.js-selfbot",
+  "name": "@echothediscorddev/discordjs-selfbot",
   "version": "0.0.0",
   "description": "A unofficial discord.js fork for creating selfbots",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TheDevYellowy/discord.js-selfbot.git"
+    "url": "git+https://github.com/TheDevYellowy/discordjs-selfbot.git"
   },
   "keywords": [
     "discord.js",
@@ -18,9 +18,9 @@
   "author": "Echo",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/TheDevYellowy/discord.js-selfbot/issues"
+    "url": "https://github.com/TheDevYellowy/discordjs-selfbot/issues"
   },
-  "homepage": "https://github.com/TheDevYellowy/discord.js-selfbot#readme",
+  "homepage": "https://github.com/TheDevYellowy/discordjs-selfbot#readme",
   "dependencies": {
     "@discordjs/collection": "^0.5.0",
     "@sapphire/async-queue": "^1.1.9",
@@ -29,6 +29,8 @@
     "discord-api-types": "^0.26.1",
     "form-data": "^4.0.0",
     "node-fetch": "^3.2.0",
-    "ws": "^8.4.2"
+    "ws": "^8.4.2",
+    "zlib": "^1.0.5",
+    "zlib-sync": "^0.1.7"
   }
 }
