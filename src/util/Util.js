@@ -2,7 +2,6 @@
 
 const { parse } = require('node:path');
 const { Collection } = require('@discordjs/collection');
-const fetch = require('node-fetch');
 const { Colors, Endpoints } = require('./Constants');
 const Options = require('./Options');
 const { Error: DiscordError, RangeError, TypeError } = require('../errors');
@@ -255,33 +254,6 @@ class Util extends null {
    */
   static escapeSpoiler(text) {
     return text.replaceAll('||', '\\|\\|');
-  }
-
-  /**
-   * @typedef {Object} FetchRecommendedShardsOptions
-   * @property {number} [guildsPerShard=1000] Number of guilds assigned per shard
-   * @property {number} [multipleOf=1] The multiple the shard count should round up to. (16 for large bot sharding)
-   */
-
-  /**
-   * Gets the recommended shard count from Discord.
-   * @param {string} token Discord auth token
-   * @param {FetchRecommendedShardsOptions} [options] Options for fetching the recommended shard count
-   * @returns {Promise<number>} The recommended number of shards
-   */
-  static async fetchRecommendedShards(token, { guildsPerShard = 1_000, multipleOf = 1 } = {}) {
-    if (!token) throw new DiscordError('TOKEN_MISSING');
-    const defaults = Options.createDefault();
-    const response = await fetch(`${defaults.http.api}/v${defaults.http.version}${Endpoints.botGateway}`, {
-      method: 'GET',
-      headers: { Authorization: `Bot ${token.replace(/^Bot\s*/i, '')}` },
-    });
-    if (!response.ok) {
-      if (response.status === 401) throw new DiscordError('TOKEN_INVALID');
-      throw response;
-    }
-    const { shards } = await response.json();
-    return Math.ceil((shards * (1_000 / guildsPerShard)) / multipleOf) * multipleOf;
   }
 
   /**
