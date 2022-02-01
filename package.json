@@ -1,5 +1,5 @@
 {
-  "name": "@echothediscorddev/discordjs-selfbot",
+  "name": "discordjs-selfbot",
   "version": "dev-0.0.0",
   "description": "A unofficial discord.js fork for creating selfbots",
   "main": "./src/index.js",
