@@ -1,10 +1,16 @@
 {
   "name": "@echothediscorddev/discordjs-selfbot",
-  "version": "0.0.0",
+  "version": "dev-0.0.0",
   "description": "A unofficial discord.js fork for creating selfbots",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "main": "./src/index.js",
+  "types": "./typings/index.d.ts",
+  "files": [
+    "src",
+    "typings"
+  ],
+  "directories": {
+    "lib": "src",
+    "test": "test"
   },
   "repository": {
     "type": "git",
@@ -13,7 +19,10 @@
   "keywords": [
     "discord.js",
     "selfbot",
-    "djs"
+    "djs",
+    "api",
+    "bot",
+    "node"
   ],
   "author": "Echo",
   "license": "ISC",
@@ -32,5 +41,9 @@
     "ws": "^8.4.2",
     "zlib": "^1.0.5",
     "zlib-sync": "^0.1.7"
+  },
+  "engines": {
+    "node": ">=16.9.0",
+    "npm": ">=7.0.0"
   }
 }
