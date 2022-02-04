@@ -3,6 +3,7 @@
 const EventEmitter = require('node:events');
 const Wrapper = require('../api/APIWrapper');
 const RESTManager = require('../rest/RESTManager');
+const Intents = require('../util/Intents');
 
 class BaseClient extends EventEmitter {
     constructor() {
@@ -14,6 +15,7 @@ class BaseClient extends EventEmitter {
             messageSweepInterval: 0,
             invalidRequestWarningInterval: 0,
             partials: [],
+						intents: Intents.resolve(32767),
             restWsBridgeTimeout: 5_000,
             restRequestTimeout: 15_000,
             restGlobalRateLimit: 0,
