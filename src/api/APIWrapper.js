@@ -100,8 +100,7 @@ class Wrapper {
                         method: method,
                         host: Endpoints.client_url,
                         path: Endpoints.base_url + finalURL,
-                        headers: headers,
-                        agent: headers['User-Agent']
+                        headers: headers
                     });
                 } catch (err) {
                     cb();

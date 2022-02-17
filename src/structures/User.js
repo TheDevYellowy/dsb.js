@@ -20,13 +20,14 @@ class User extends Base {
      * @type {Snowflake}
      */
     this.id = data.id;
-    this.bot = null;
-    this.system = null;
-    this.flags = null;
-    this._patch(data);
 
-    this.blocked = this.client.blocked.has(this.id);
-    this.friended = this.client.friends.has(this.id);
+    this.bot = null;
+
+    this.system = null;
+
+    this.flags = null;
+
+    this._patch(data);
   }
 
   _patch(data) {
@@ -112,10 +113,24 @@ class User extends Base {
   }
 
   /**
+   * @returns {Boolean}
+   */
+  get blocked() {
+    return this.client.blocked.has(this.id);
+  }
+
+  /**
+   * @returns {Boolean}
+   */
+  get friend() {
+    return this.client.friends.has(this.id);
+  }
+
+  /**
    * Adds the user to your blocks list
    * @returns {Promise<User>}
    */
-  async block() {
+  addBlock() {
     return this.client.api
       .users('@me')
       .relationships[this.id].put({ data: { type: 2 }})
@@ -126,7 +141,7 @@ class User extends Base {
    * Removes the user from your blocks list
    * @returns {Promise<User>}
    */
-  async unblock() {
+  unblock() {
     return this.client.api
       .users('@me')
       .relationships[this.id].delete()
@@ -137,7 +152,7 @@ class User extends Base {
    * Removes the user from your friends list
    * @returns {Promise<User>}
    */
-  async unfriend() {
+  unfriend() {
     return this.client.api
       .users('@me')
       .relationships[this.id].delete()
@@ -148,7 +163,7 @@ class User extends Base {
    * Sends a friend request to the user
    * @returns {Promise<User>}
    */
-  async friend() {
+  addFriend() {
     return this.client.api
       .users('@me')
       .relationships[this.id].put({ data: { type: 1 }})

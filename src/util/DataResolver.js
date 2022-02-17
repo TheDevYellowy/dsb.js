@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const stream = require('node:stream');
-const fetch = require('node-fetch');
+const fetch = import('node-fetch');
 const { Error: DiscordError, TypeError } = require('../errors');
 const Invite = require('../structures/Invite');
 

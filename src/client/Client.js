@@ -58,7 +58,7 @@ class Client extends BaseClient {
         this.channels = new ChannelManager(this);
 
         this.sweepers = new Sweepers(this, this.options.sweepers);
-        this.presense = new ClientPresence(this, this.options.presence);
+        this.presence = new ClientPresence(this, this.options.presence);
 
         this.user = null;
         this.application = null;

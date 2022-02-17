@@ -53,7 +53,7 @@ class MessageEmbed {
      * @see {@link https://discord.com/developers/docs/resources/channel#embed-object-embed-types}
      * @deprecated
      */
-    this.type = data.type ?? 'rich';
+    this.type = data.type ?? 'link';
 
     /**
      * The title of this embed
