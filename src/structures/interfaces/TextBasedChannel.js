@@ -1,13 +1,12 @@
 'use strict';
 
-/* eslint-disable import/order */
-const MessageCollector = require('../MessageCollector');
-const MessagePayload = require('../MessagePayload');
-const SnowflakeUtil = require('../../util/SnowflakeUtil');
 const { Collection } = require('@discordjs/collection');
-const { InteractionTypes } = require('../../util/Constants');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
+const { InteractionType, Routes } = require('discord-api-types/v9');
 const { TypeError, Error } = require('../../errors');
 const InteractionCollector = require('../InteractionCollector');
+const MessageCollector = require('../MessageCollector');
+const MessagePayload = require('../MessagePayload');
 
 /**
  * Interface for classes that have text-channel-like features.
@@ -49,7 +48,7 @@ class TextBasedChannel {
    * @readonly
    */
   get lastPinAt() {
-    return this.lastPinTimestamp ? new Date(this.lastPinTimestamp) : null;
+    return this.lastPinTimestamp && new Date(this.lastPinTimestamp);
   }
 
   /**
@@ -58,12 +57,12 @@ class TextBasedChannel {
    * @property {boolean} [tts=false] Whether or not the message should be spoken aloud
    * @property {string} [nonce=''] The nonce for the message
    * @property {string} [content=''] The content for the message
-   * @property {MessageEmbed[]|APIEmbed[]} [embeds] The embeds for the message
+   * @property {Embed[]|APIEmbed[]} [embeds] The embeds for the message
    * (see [here](https://discord.com/developers/docs/resources/channel#embed-object) for more details)
    * @property {MessageMentionOptions} [allowedMentions] Which mentions should be parsed from the message content
    * (see [here](https://discord.com/developers/docs/resources/channel#allowed-mentions-object) for more details)
    * @property {FileOptions[]|BufferResolvable[]|MessageAttachment[]} [files] Files to send with the message
-   * @property {MessageActionRow[]|MessageActionRowOptions[]} [components]
+   * @property {ActionRow[]|ActionRowOptions[]} [components]
    * Action rows containing interactive components for the message (buttons, select menus)
    * @property {MessageAttachment[]} [attachments] Attachments to send in the message
    */
@@ -73,6 +72,7 @@ class TextBasedChannel {
    * @typedef {BaseMessageOptions} MessageOptions
    * @property {ReplyOptions} [reply] The options for replying to a message
    * @property {StickerResolvable[]} [stickers=[]] Stickers to send in the message
+   * @property {MessageFlags} [flags] Which flags to set for the message. Only `MessageFlags.SuppressEmbeds` can be set.
    */
 
   /**
@@ -103,8 +103,8 @@ class TextBasedChannel {
    * Options for sending a message with a reply.
    * @typedef {Object} ReplyOptions
    * @property {MessageResolvable} messageReference The message to reply to (must be in the same channel and not system)
-   * @property {boolean} [failIfNotExists=true] Whether to error if the referenced message
-   * does not exist (creates a standard message in this case when false)
+   * @property {boolean} [failIfNotExists=this.client.options.failIfNotExists] Whether to error if the referenced
+   * message does not exist (creates a standard message in this case when false)
    */
 
   /**
@@ -128,7 +128,7 @@ class TextBasedChannel {
    * channel.send({
    *   files: [{
    *     attachment: 'entire/path/to/file.jpg',
-   *     name: 'file.jpg'
+   *     name: 'file.jpg',
    *     description: 'A description of the file'
    *   }]
    * })
@@ -147,7 +147,7 @@ class TextBasedChannel {
    *   ],
    *   files: [{
    *     attachment: 'entire/path/to/file.jpg',
-   *     name: 'file.jpg'
+   *     name: 'file.jpg',
    *     description: 'A description of the file'
    *   }]
    * })
@@ -166,13 +166,13 @@ class TextBasedChannel {
     let messagePayload;
 
     if (options instanceof MessagePayload) {
-      messagePayload = options.resolveData();
+      messagePayload = options.resolveBody();
     } else {
-      messagePayload = MessagePayload.create(this, options).resolveData();
+      messagePayload = MessagePayload.create(this, options).resolveBody();
     }
 
-    const { data, files } = await messagePayload.resolveFiles();
-    const d = await this.client.api.channels[this.id].messages.post({ data, files });
+    const { body, files } = await messagePayload.resolveFiles();
+    const d = await this.client.rest.post(Routes.channelMessages(this.id), { body, files });
 
     return this.messages.cache.get(d.id) ?? this.messages._add(d);
   }
@@ -185,7 +185,7 @@ class TextBasedChannel {
    * channel.sendTyping();
    */
   async sendTyping() {
-    await this.client.api.channels(this.id).typing.post();
+    await this.client.rest.post(Routes.channelTyping(this.id));
   }
 
   /**
@@ -236,7 +236,7 @@ class TextBasedChannel {
   }
 
   /**
-   * Creates a button interaction collector.
+   * Creates a component interaction collector.
    * @param {MessageComponentCollectorOptions} [options={}] Options to send to the collector
    * @returns {InteractionCollector}
    * @example
@@ -249,7 +249,7 @@ class TextBasedChannel {
   createMessageComponentCollector(options = {}) {
     return new InteractionCollector(this.client, {
       ...options,
-      interactionType: InteractionTypes.MESSAGE_COMPONENT,
+      interactionType: InteractionType.MessageComponent,
       channel: this,
     });
   }
@@ -294,11 +294,11 @@ class TextBasedChannel {
     if (Array.isArray(messages) || messages instanceof Collection) {
       let messageIds = messages instanceof Collection ? [...messages.keys()] : messages.map(m => m.id ?? m);
       if (filterOld) {
-        messageIds = messageIds.filter(id => Date.now() - SnowflakeUtil.timestampFrom(id) < 1_209_600_000);
+        messageIds = messageIds.filter(id => Date.now() - DiscordSnowflake.timestampFrom(id) < 1_209_600_000);
       }
       if (messageIds.length === 0) return new Collection();
       if (messageIds.length === 1) {
-        await this.client.api.channels(this.id).messages(messageIds[0]).delete();
+        await this.client.rest.delete(Routes.channelMessage(this.id, messageIds[0]));
         const message = this.client.actions.MessageDelete.getMessage(
           {
             message_id: messageIds[0],
@@ -307,7 +307,7 @@ class TextBasedChannel {
         );
         return message ? new Collection([[message.id, message]]) : new Collection();
       }
-      await this.client.api.channels[this.id].messages['bulk-delete'].post({ data: { messages: messageIds } });
+      await this.client.rest.post(Routes.channelBulkDelete(this.id), { body: { messages: messageIds } });
       return messageIds.reduce(
         (col, id) =>
           col.set(
@@ -357,4 +357,5 @@ class TextBasedChannel {
 module.exports = TextBasedChannel;
 
 // Fixes Circular
+// eslint-disable-next-line import/order
 const MessageManager = require('../../managers/MessageManager');

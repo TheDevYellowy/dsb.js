@@ -2,13 +2,11 @@
 
 const { parse } = require('node:path');
 const { Collection } = require('@discordjs/collection');
-const { Colors, Endpoints } = require('./Constants');
-const Options = require('./Options');
+const { ChannelType, RouteBases, Routes } = require('discord-api-types/v9');
+const { fetch } = require('undici');
+const Colors = require('./Colors');
 const { Error: DiscordError, RangeError, TypeError } = require('../errors');
-const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 const isObject = d => typeof d === 'object' && d !== null;
-
-let deprecatinEmittedForRemoveMentions = false;
 
 /**
  * Contains various general-purpose utility methods.
@@ -257,6 +255,32 @@ class Util extends null {
   }
 
   /**
+   * @typedef {Object} FetchRecommendedShardsOptions
+   * @property {number} [guildsPerShard=1000] Number of guilds assigned per shard
+   * @property {number} [multipleOf=1] The multiple the shard count should round up to. (16 for large bot sharding)
+   */
+
+  /**
+   * Gets the recommended shard count from Discord.
+   * @param {string} token Discord auth token
+   * @param {FetchRecommendedShardsOptions} [options] Options for fetching the recommended shard count
+   * @returns {Promise<number>} The recommended number of shards
+   */
+  static async fetchRecommendedShards(token, { guildsPerShard = 1_000, multipleOf = 1 } = {}) {
+    if (!token) throw new DiscordError('TOKEN_MISSING');
+    const response = await fetch(RouteBases.api + Routes.gatewayBot(), {
+      method: 'GET',
+      headers: { Authorization: `Bot ${token.replace(/^Bot\s*/i, '')}` },
+    });
+    if (!response.ok) {
+      if (response.status === 401) throw new DiscordError('TOKEN_INVALID');
+      throw response;
+    }
+    const { shards } = await response.json();
+    return Math.ceil((shards * (1_000 / guildsPerShard)) / multipleOf) * multipleOf;
+  }
+
+  /**
    * Parses emoji info out of a string. The string must be one of:
    * * A UTF-8 emoji (no id)
    * * A URL-encoded UTF-8 emoji (no id)
@@ -306,7 +330,7 @@ class Util extends null {
   static mergeDefault(def, given) {
     if (!given) return def;
     for (const key in def) {
-      if (!has(given, key) || given[key] === undefined) {
+      if (!Object.hasOwn(given, key) || given[key] === undefined) {
         given[key] = def[key];
       } else if (given[key] === Object(given[key])) {
         given[key] = Util.mergeDefault(def[key], given[key]);
@@ -395,37 +419,37 @@ class Util extends null {
    * [255, 0, 255] // purple
    * ```
    * or one of the following strings:
-   * - `DEFAULT`
-   * - `WHITE`
-   * - `AQUA`
-   * - `GREEN`
-   * - `BLUE`
-   * - `YELLOW`
-   * - `PURPLE`
-   * - `LUMINOUS_VIVID_PINK`
-   * - `FUCHSIA`
-   * - `GOLD`
-   * - `ORANGE`
-   * - `RED`
-   * - `GREY`
-   * - `NAVY`
-   * - `DARK_AQUA`
-   * - `DARK_GREEN`
-   * - `DARK_BLUE`
-   * - `DARK_PURPLE`
-   * - `DARK_VIVID_PINK`
-   * - `DARK_GOLD`
-   * - `DARK_ORANGE`
-   * - `DARK_RED`
-   * - `DARK_GREY`
-   * - `DARKER_GREY`
-   * - `LIGHT_GREY`
-   * - `DARK_NAVY`
-   * - `BLURPLE`
-   * - `GREYPLE`
-   * - `DARK_BUT_NOT_BLACK`
-   * - `NOT_QUITE_BLACK`
-   * - `RANDOM`
+   * - `Default`
+   * - `White`
+   * - `Aqua`
+   * - `Green`
+   * - `Blue`
+   * - `Yellow`
+   * - `Purple`
+   * - `LuminousVividPink`
+   * - `Fuchsia`
+   * - `Gold`
+   * - `Orange`
+   * - `Red`
+   * - `Grey`
+   * - `Navy`
+   * - `DarkAqua`
+   * - `DarkGreen`
+   * - `DarkBlue`
+   * - `DarkPurple`
+   * - `DarkVividPink`
+   * - `DarkGold`
+   * - `DarkOrange`
+   * - `DarkRed`
+   * - `DarkGrey`
+   * - `DarkerGrey`
+   * - `LightGrey`
+   * - `DarkNavy`
+   * - `Blurple`
+   * - `Greyple`
+   * - `DarkButNotBlack`
+   * - `NotQuiteBlack`
+   * - `Random`
    * @typedef {string|number|number[]} ColorResolvable
    */
 
@@ -436,8 +460,8 @@ class Util extends null {
    */
   static resolveColor(color) {
     if (typeof color === 'string') {
-      if (color === 'RANDOM') return Math.floor(Math.random() * (0xffffff + 1));
-      if (color === 'DEFAULT') return 0;
+      if (color === 'Random') return Math.floor(Math.random() * (0xffffff + 1));
+      if (color === 'Default') return 0;
       color = Colors[color] ?? parseInt(color.replace('#', ''), 16);
     } else if (Array.isArray(color)) {
       color = (color[0] << 16) + (color[1] << 8) + color[2];
@@ -458,8 +482,8 @@ class Util extends null {
     const isGuildChannel = collection.first() instanceof GuildChannel;
     return collection.sorted(
       isGuildChannel
-        ? (a, b) => a.rawPosition = b.rawPosition || Number(BigInt(a.id) - BigInt(b.id))
-        : (a, b) => a.rawPosition = b.rawPosition || Number(BigInt(b.id) - BigInt(a.id))
+        ? (a, b) => a.rawPosition - b.rawPosition || Number(BigInt(a.id) - BigInt(b.id))
+        : (a, b) => a.rawPosition - b.rawPosition || Number(BigInt(b.id) - BigInt(a.id)),
     );
   }
 
@@ -469,16 +493,17 @@ class Util extends null {
    * @param {number} position New position for the object
    * @param {boolean} relative Whether `position` is relative to its current position
    * @param {Collection<string, Channel|Role>} sorted A collection of the objects sorted properly
-   * @param {APIRouter} route Route to call PATCH on
+   * @param {Client} client The client to use to patch the data
+   * @param {string} route Route to call PATCH on
    * @param {string} [reason] Reason for the change
    * @returns {Promise<Channel[]|Role[]>} Updated item list, with `id` and `position` properties
    * @private
    */
-  static async setPosition(item, position, relative, sorted, route, reason) {
+  static async setPosition(item, position, relative, sorted, client, route, reason) {
     let updatedItems = [...sorted.values()];
     Util.moveElementInArray(updatedItems, item, position, relative);
     updatedItems = updatedItems.map((r, i) => ({ id: r.id, position: i }));
-    await route.patch({ data: updatedItems, reason });
+    await client.rest.patch(route, { body: updatedItems, reason });
     return updatedItems;
   }
 
@@ -493,29 +518,8 @@ class Util extends null {
     const res = parse(path);
     return ext && res.ext.startsWith(ext) ? res.name : res.base.split('?')[0];
   }
-
-  /**
-   * Breaks user, role and everyone/here mentions by adding a zero width space after every @ character
-   * @param {string} str The string to sanitize
-   * @returns {string}
-   * @deprecated Use {@link BaseMessageOptions#allowedMentions} instead.
-   */
-  static removeMentions(str) {
-    if(!deprecatinEmittedForRemoveMentions) {
-      process.emitWarning(
-        'The Util.removeMentions method is deprecated. Use MessageOptions#allowedMentions instead.',
-        'DeprecationWarning',
-      )
-
-      deprecatinEmittedForRemoveMentions = true
-    }
-    return str.replaceAll('@', '@\u200b');
-  }
-
   /**
    * The content to have all mentions replaced by the equivalent text.
-   * <warn>When {@link Util.removeMentions} is removed, this method will no longer sanitize mentions.
-   * Use {@link BaseMessageOptions#allowedMentions} instead to prevent mentions when sending a message.</warn>
    * @param {string} str The string to be converted
    * @param {TextBasedChannels} channel The channel the string was sent in
    * @returns {string}
@@ -524,17 +528,17 @@ class Util extends null {
     str = str
       .replace(/<@!?[0-9]+>/g, input => {
         const id = input.replace(/<|!|>|@/g, '');
-        if (channel.type === 'DM') {
+        if (channel.type === ChannelType.DM) {
           const user = channel.client.users.cache.get(id);
-          return user ? Util.removeMentions(`@${user.username}`) : input;
+          return user ? `@${user.username}` : input;
         }
 
         const member = channel.guild.members.cache.get(id);
         if (member) {
-          return Util.removeMentions(`@${member.displayName}`);
+          return `@${member.displayName}`;
         } else {
           const user = channel.client.users.cache.get(id);
-          return user ? Util.removeMentions(`@${user.username}`) : input;
+          return user ? `@${user.username}` : input;
         }
       })
       .replace(/<#[0-9]+>/g, input => {
@@ -542,7 +546,7 @@ class Util extends null {
         return mentionedChannel ? `#${mentionedChannel.name}` : input;
       })
       .replace(/<@&[0-9]+>/g, input => {
-        if (channel.type === 'DM') return input;
+        if (channel.type === ChannelType.DM) return input;
         const role = channel.guild.roles.cache.get(input.replace(/<|@|>|&/g, ''));
         return role ? `@${role.name}` : input;
       });
@@ -557,21 +561,9 @@ class Util extends null {
   static cleanCodeBlockContent(text) {
     return text.replaceAll('```', '`\u200b``');
   }
-
-  /**
-   * Creates a sweep filter that sweeps archived threads
-   * @param {number} [lifetime=14400] How long a thread has to be archived to be valid for sweeping
-   * @deprecated When not using with `makeCache` use `Sweepers.archivedThreadSweepFilter` instead
-   * @returns {SweepFilter}
-   */
-  static archivedThreadSweepFilter(lifetime = 14400) {
-    const filter = require('./Sweepers').archivedThreadSweepFilter(lifetime)
-    filter.isDefault = true;
-    return filter;
-  }
 }
 
 module.exports = Util;
 
 // Fixes Circular
-const GuildChannel = require('../structures/GuildChannel')
+const GuildChannel = require('../structures/GuildChannel');

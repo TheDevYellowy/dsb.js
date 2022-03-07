@@ -1,11 +1,12 @@
 'use strict';
 
+const process = require('node:process');
 const { Collection } = require('@discordjs/collection');
+const { OverwriteType, Routes } = require('discord-api-types/v9');
 const CachedManager = require('./CachedManager');
 const { TypeError } = require('../errors');
 const PermissionOverwrites = require('../structures/PermissionOverwrites');
 const { Role } = require('../structures/Role');
-const { OverwriteTypes } = require('../util/Constants');
 
 let cacheWarningEmitted = false;
 
@@ -57,7 +58,7 @@ class PermissionOverwriteManager extends CachedManager {
    * message.channel.permissionOverwrites.set([
    *   {
    *      id: message.author.id,
-   *      deny: [Permissions.FLAGS.VIEW_CHANNEL],
+   *      deny: [PermissionsFlagsBit.ViewChannel],
    *   },
    * ], 'Needed to change permissions');
    */
@@ -93,18 +94,15 @@ class PermissionOverwriteManager extends CachedManager {
     if (typeof type !== 'number') {
       userOrRole = this.channel.guild.roles.resolve(userOrRole) ?? this.client.users.resolve(userOrRole);
       if (!userOrRole) throw new TypeError('INVALID_TYPE', 'parameter', 'User nor a Role');
-      type = userOrRole instanceof Role ? OverwriteTypes.role : OverwriteTypes.member;
+      type = userOrRole instanceof Role ? OverwriteType.Role : OverwriteType.Member;
     }
 
     const { allow, deny } = PermissionOverwrites.resolveOverwriteOptions(options, existing);
 
-    await this.client.api
-      .channels(this.channel.id)
-      .permissions(userOrRoleId)
-      .put({
-        data: { id: userOrRoleId, type, allow, deny },
-        reason,
-      });
+    await this.client.rest.put(Routes.channelPermission(this.channel.id, userOrRoleId), {
+      body: { id: userOrRoleId, type, allow, deny },
+      reason,
+    });
     return this.channel;
   }
 
@@ -156,7 +154,7 @@ class PermissionOverwriteManager extends CachedManager {
     const userOrRoleId = this.channel.guild.roles.resolveId(userOrRole) ?? this.client.users.resolveId(userOrRole);
     if (!userOrRoleId) throw new TypeError('INVALID_TYPE', 'parameter', 'User nor a Role');
 
-    await this.client.api.channels(this.channel.id).permissions(userOrRoleId).delete({ reason });
+    await this.client.rest.delete(Routes.channelPermission(this.channel.id, userOrRoleId), { reason });
     return this.channel;
   }
 }

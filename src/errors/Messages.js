@@ -41,13 +41,6 @@ const Messages = {
 
   INVITE_OPTIONS_MISSING_CHANNEL: 'A valid guild channel must be provided when GuildScheduledEvent is EXTERNAL.',
 
-  EMBED_TITLE: 'MessageEmbed title must be a string.',
-  EMBED_FIELD_NAME: 'MessageEmbed field names must be non-empty strings.',
-  EMBED_FIELD_VALUE: 'MessageEmbed field values must be non-empty strings.',
-  EMBED_FOOTER_TEXT: 'MessageEmbed footer text must be a string.',
-  EMBED_DESCRIPTION: 'MessageEmbed description must be a string.',
-  EMBED_AUTHOR_NAME: 'MessageEmbed author name must be a string.',
-
   BUTTON_LABEL: 'MessageButton label must be a string',
   BUTTON_URL: 'MessageButton URL must be a string',
   BUTTON_CUSTOM_ID: 'MessageButton customId must be a string',
@@ -96,7 +89,7 @@ const Messages = {
   GUILD_UNCACHED_ME: 'The client user as a member of this guild is uncached.',
   CHANNEL_NOT_CACHED: 'Could not find the channel where this message came from in the cache!',
   STAGE_CHANNEL_RESOLVE: 'Could not resolve channel to a stage channel.',
-  INVITE_OPTIONS_MISSING_CHANNEL: 'A valid guild channel must be provided when GuildScheduledEvent is EXTERNAL.',
+  GUILD_SCHEDULED_EVENT_RESOLVE: 'Could not resolve the guild scheduled event.',
 
   INVALID_TYPE: (name, expected, an = false) => `Supplied ${name} is not a${an ? 'n' : ''} ${expected}.`,
   INVALID_ELEMENT: (type, name, elem) => `Supplied ${type} ${name} includes an invalid element: ${elem}`,
@@ -154,5 +147,11 @@ const Messages = {
 
   SWEEP_FILTER_RETURN: 'The return value of the sweepFilter function was not false or a Function',
 };
+
+Messages.AuthenticationFailed = Messages.TOKEN_INVALID;
+Messages.InvalidShard = Messages.SHARDING_INVALID;
+Messages.ShardingRequired = Messages.SHARDING_REQUIRED;
+Messages.InvalidIntents = Messages.INVALID_INTENTS;
+Messages.DisallowedIntents = Messages.DISALLOWED_INTENTS;
 
 for (const [name, message] of Object.entries(Messages)) register(name, message);

@@ -1,6 +1,7 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
+const { Routes } = require('discord-api-types/v9');
 const CachedManager = require('./CachedManager');
 const { TypeError } = require('../errors');
 const ThreadMember = require('../structures/ThreadMember');
@@ -77,7 +78,7 @@ class ThreadMemberManager extends CachedManager {
   async add(member, reason) {
     const id = member === '@me' ? member : this.client.users.resolveId(member);
     if (!id) throw new TypeError('INVALID_TYPE', 'member', 'UserResolvable');
-    await this.client.api.channels(this.thread.id, 'thread-members', id).put({ reason });
+    await this.client.rest.put(Routes.threadMembers(this.thread.id, id), { reason });
     return id;
   }
 
@@ -88,7 +89,7 @@ class ThreadMemberManager extends CachedManager {
    * @returns {Promise<Snowflake>}
    */
   async remove(id, reason) {
-    await this.client.api.channels(this.thread.id, 'thread-members', id).delete({ reason });
+    await this.client.rest.delete(Routes.threadMembers(this.thread.id, id), { reason });
     return id;
   }
 
@@ -98,24 +99,27 @@ class ThreadMemberManager extends CachedManager {
       if (existing) return existing;
     }
 
-    const data = await this.client.api.channels(this.thread.id, 'thread-members', memberId).get();
+    const data = await this.client.rest.get(Routes.threadMembers(this.thread.id, memberId));
     return this._add(data, cache);
   }
 
   async _fetchMany(cache) {
-    const raw = await this.client.api.channels(this.thread.id, 'thread-members').get();
+    const raw = await this.client.rest.get(Routes.threadMembers(this.thread.id));
     return raw.reduce((col, member) => col.set(member.user_id, this._add(member, cache)), new Collection());
   }
 
   /**
+   * @typedef {BaseFetchOptions} ThreadMemberFetchOptions
+   * @property {UserResolvable} [member] The specific user to fetch from the thread
+   */
+
+  /**
    * Fetches member(s) for the thread from Discord, requires access to the `GUILD_MEMBERS` gateway intent.
-   * @param {UserResolvable|boolean} [member] The member to fetch. If `undefined`, all members
-   * in the thread are fetched, and will be cached based on `options.cache`. If boolean, this serves
-   * the purpose of `options.cache`.
-   * @param {BaseFetchOptions} [options] Additional options for this fetch
+   * @param {ThreadMemberFetchOptions|boolean} [options] Additional options for this fetch, when a `boolean` is provided
+   * all members are fetched with `options.cache` set to the boolean value
    * @returns {Promise<ThreadMember|Collection<Snowflake, ThreadMember>>}
    */
-  fetch(member, { cache = true, force = false } = {}) {
+  fetch({ member, cache = true, force = false } = {}) {
     const id = this.resolveId(member);
     return id ? this._fetchOne(id, cache, force) : this._fetchMany(member ?? cache);
   }

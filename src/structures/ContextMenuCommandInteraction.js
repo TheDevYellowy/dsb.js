@@ -1,14 +1,14 @@
 'use strict';
 
-const BaseCommandInteraction = require('./BaseCommandInteraction');
+const { ApplicationCommandOptionType } = require('discord-api-types/v9');
+const CommandInteraction = require('./CommandInteraction');
 const CommandInteractionOptionResolver = require('./CommandInteractionOptionResolver');
-const { ApplicationCommandOptionTypes, ApplicationCommandTypes } = require('../util/Constants');
 
 /**
  * Represents a context menu interaction.
- * @extends {BaseCommandInteraction}
+ * @extends {CommandInteraction}
  */
-class ContextMenuInteraction extends BaseCommandInteraction {
+class ContextMenuCommandInteraction extends CommandInteraction {
   constructor(client, data) {
     super(client, data);
     /**
@@ -26,12 +26,6 @@ class ContextMenuInteraction extends BaseCommandInteraction {
      * @type {Snowflake}
      */
     this.targetId = data.data.target_id;
-
-    /**
-     * The type of the target of the interaction; either USER or MESSAGE
-     * @type {ApplicationCommandType}
-     */
-    this.targetType = ApplicationCommandTypes[data.data.type];
   }
 
   /**
@@ -45,7 +39,7 @@ class ContextMenuInteraction extends BaseCommandInteraction {
 
     if (resolved.users?.[target_id]) {
       result.push(
-        this.transformOption({ name: 'user', type: ApplicationCommandOptionTypes.USER, value: target_id }, resolved),
+        this.transformOption({ name: 'user', type: ApplicationCommandOptionType.User, value: target_id }, resolved),
       );
     }
 
@@ -62,4 +56,4 @@ class ContextMenuInteraction extends BaseCommandInteraction {
   }
 }
 
-module.exports = ContextMenuInteraction;
+module.exports = ContextMenuCommandInteraction;

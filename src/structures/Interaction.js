@@ -1,9 +1,9 @@
 'use strict';
 
+const { DiscordSnowflake } = require('@sapphire/snowflake');
+const { InteractionType, ApplicationCommandType, ComponentType } = require('discord-api-types/v9');
 const Base = require('./Base');
-const { InteractionTypes, MessageComponentTypes, ApplicationCommandTypes } = require('../util/Constants');
-const Permissions = require('../util/Permissions');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
+const PermissionsBitField = require('../util/PermissionsBitField');
 
 /**
  * Represents an interaction.
@@ -17,7 +17,7 @@ class Interaction extends Base {
      * The interaction's type
      * @type {InteractionType}
      */
-    this.type = InteractionTypes[data.type];
+    this.type = data.type;
 
     /**
      * The interaction's id
@@ -71,9 +71,24 @@ class Interaction extends Base {
 
     /**
      * The permissions of the member, if one exists, in the channel this interaction was executed in
-     * @type {?Readonly<Permissions>}
+     * @type {?Readonly<PermissionsBitField>}
      */
-    this.memberPermissions = data.member?.permissions ? new Permissions(data.member.permissions).freeze() : null;
+    this.memberPermissions = data.member?.permissions
+      ? new PermissionsBitField(data.member.permissions).freeze()
+      : null;
+
+    /**
+     * The locale of the user who invoked this interaction
+     * @type {string}
+     * @see {@link https://discord.com/developers/docs/reference#locales}
+     */
+    this.locale = data.locale;
+
+    /**
+     * The preferred locale from the guild this interaction was sent in
+     * @type {?string}
+     */
+    this.guildLocale = data.guild_locale ?? null;
   }
 
   /**
@@ -82,7 +97,7 @@ class Interaction extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return SnowflakeUtil.timestampFrom(this.id);
+    return DiscordSnowflake.timestampFrom(this.id);
   }
 
   /**
@@ -137,43 +152,43 @@ class Interaction extends Base {
   }
 
   /**
-   * Indicates whether this interaction is a {@link BaseCommandInteraction}.
-   * @returns {boolean}
-   */
-  isApplicationCommand() {
-    return InteractionTypes[this.type] === InteractionTypes.APPLICATION_COMMAND;
-  }
-
-  /**
    * Indicates whether this interaction is a {@link CommandInteraction}.
    * @returns {boolean}
    */
   isCommand() {
-    return InteractionTypes[this.type] === InteractionTypes.APPLICATION_COMMAND && typeof this.targetId === 'undefined';
+    return this.type === InteractionType.ApplicationCommand;
   }
 
   /**
-   * Indicates whether this interaction is a {@link ContextMenuInteraction}
+   * Indicates whether this interaction is a {@link ChatInputCommandInteraction}.
    * @returns {boolean}
    */
-  isContextMenu() {
-    return InteractionTypes[this.type] === InteractionTypes.APPLICATION_COMMAND && typeof this.targetId !== 'undefined';
+  isChatInputCommand() {
+    return this.isCommand() && this.commandType === ApplicationCommandType.ChatInput;
   }
 
   /**
-   * Indicates whether this interaction is a {@link UserContextMenuInteraction}
+   * Indicates whether this interaction is a {@link ContextMenuCommandInteraction}
    * @returns {boolean}
    */
-  isUserContextMenu() {
-    return this.isContextMenu() && ApplicationCommandTypes[this.targetType] === ApplicationCommandTypes.USER;
+  isContextMenuCommand() {
+    return this.isCommand() && [ApplicationCommandType.User, ApplicationCommandType.Message].includes(this.commandType);
   }
 
   /**
-   * Indicates whether this interaction is a {@link MessageContextMenuInteraction}
+   * Indicates whether this interaction is a {@link UserContextMenuCommandInteraction}
    * @returns {boolean}
    */
-  isMessageContextMenu() {
-    return this.isContextMenu() && ApplicationCommandTypes[this.targetType] === ApplicationCommandTypes.MESSAGE;
+  isUserContextMenuCommand() {
+    return this.isContextMenuCommand() && this.commandType === ApplicationCommandType.User;
+  }
+
+  /**
+   * Indicates whether this interaction is a {@link MessageContextMenuCommandInteraction}
+   * @returns {boolean}
+   */
+  isMessageContextMenuCommand() {
+    return this.isContextMenuCommand() && this.commandType === ApplicationCommandType.Message;
   }
 
   /**
@@ -181,7 +196,7 @@ class Interaction extends Base {
    * @returns {boolean}
    */
   isAutocomplete() {
-    return InteractionTypes[this.type] === InteractionTypes.APPLICATION_COMMAND_AUTOCOMPLETE;
+    return this.type === InteractionType.ApplicationCommandAutocomplete;
   }
 
   /**
@@ -189,7 +204,7 @@ class Interaction extends Base {
    * @returns {boolean}
    */
   isMessageComponent() {
-    return InteractionTypes[this.type] === InteractionTypes.MESSAGE_COMPONENT;
+    return this.type === InteractionType.MessageComponent;
   }
 
   /**
@@ -197,10 +212,7 @@ class Interaction extends Base {
    * @returns {boolean}
    */
   isButton() {
-    return (
-      InteractionTypes[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
-      MessageComponentTypes[this.componentType] === MessageComponentTypes.BUTTON
-    );
+    return this.isMessageComponent() && this.componentType === ComponentType.Button;
   }
 
   /**
@@ -208,10 +220,15 @@ class Interaction extends Base {
    * @returns {boolean}
    */
   isSelectMenu() {
-    return (
-      InteractionTypes[this.type] === InteractionTypes.MESSAGE_COMPONENT &&
-      MessageComponentTypes[this.componentType] === MessageComponentTypes.SELECT_MENU
-    );
+    return this.isMessageComponent() && this.componentType === ComponentType.SelectMenu;
+  }
+
+  /**
+   * Indicates whether this interaction can be replied to.
+   * @returns {boolean}
+   */
+  isRepliable() {
+    return ![InteractionType.Ping, InteractionType.ApplicationCommandAutocomplete].includes(this.type);
   }
 }
 

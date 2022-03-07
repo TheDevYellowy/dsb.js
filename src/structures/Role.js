@@ -1,20 +1,10 @@
 'use strict';
 
+const { DiscordSnowflake } = require('@sapphire/snowflake');
+const { PermissionFlagsBits } = require('discord-api-types/v9');
 const Base = require('./Base');
 const { Error } = require('../errors');
-const Permissions = require('../util/Permissions');
-const SnowflakeUtil = require('../util/SnowflakeUtil');
-const Util = require('../util/Util');
-
-let deprecationEmittedForComparePositions = false;
-
-/**
- * @type {WeakSet<Role>}
- * @private
- * @internal
- */
-const deletedRoles = new WeakSet();
-let deprecationEmittedForDeleted = false;
+const PermissionsBitField = require('../util/PermissionsBitField');
 
 /**
  * Represents a role on Discord.
@@ -86,9 +76,9 @@ class Role extends Base {
     if ('permissions' in data) {
       /**
        * The permissions of the role
-       * @type {Readonly<Permissions>}
+       * @type {Readonly<PermissionsBitField>}
        */
-      this.permissions = new Permissions(BigInt(data.permissions)).freeze();
+      this.permissions = new PermissionsBitField(BigInt(data.permissions)).freeze();
     }
 
     if ('managed' in data) {
@@ -138,7 +128,7 @@ class Role extends Base {
    * @readonly
    */
   get createdTimestamp() {
-    return SnowflakeUtil.timestampFrom(this.id);
+    return DiscordSnowflake.timestampFrom(this.id);
   }
 
   /**
@@ -148,36 +138,6 @@ class Role extends Base {
    */
   get createdAt() {
     return new Date(this.createdTimestamp);
-  }
-
-  /**
-   * Whether or not the role has been deleted
-   * @type {boolean}
-   * @deprecated This will be removed in the next major version, see https://github.com/discordjs/discord.js/issues/7091
-   */
-  get deleted() {
-    if (!deprecationEmittedForDeleted) {
-      deprecationEmittedForDeleted = true;
-      process.emitWarning(
-        'Role#deleted is deprecated, see https://github.com/discordjs/discord.js/issues/7091.',
-        'DeprecationWarning',
-      );
-    }
-
-    return deletedRoles.has(this);
-  }
-
-  set deleted(value) {
-    if (!deprecationEmittedForDeleted) {
-      deprecationEmittedForDeleted = true;
-      process.emitWarning(
-        'Role#deleted is deprecated, see https://github.com/discordjs/discord.js/issues/7091.',
-        'DeprecationWarning',
-      );
-    }
-
-    if (value) deletedRoles.add(this);
-    else deletedRoles.delete(this);
   }
 
   /**
@@ -206,7 +166,7 @@ class Role extends Base {
   get editable() {
     if (this.managed) return false;
     const clientMember = this.guild.members.resolve(this.client.user);
-    if (!clientMember.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) return false;
+    if (!clientMember.permissions.has(PermissionFlagsBits.ManageRoles)) return false;
     return clientMember.roles.highest.comparePositionTo(this) > 0;
   }
 
@@ -265,7 +225,7 @@ class Role extends Base {
    * taking into account permission overwrites.
    * @param {GuildChannel|Snowflake} channel The guild channel to use as context
    * @param {boolean} [checkAdmin=true] Whether having `ADMINISTRATOR` will return all permissions
-   * @returns {Readonly<Permissions>}
+   * @returns {Readonly<PermissionsBitField>}
    */
   permissionsIn(channel, checkAdmin = true) {
     channel = this.guild.channels.resolve(channel);
@@ -325,7 +285,7 @@ class Role extends Base {
    * @returns {Promise<Role>}
    * @example
    * // Set the permissions of the role
-   * role.setPermissions([Permissions.FLAGS.KICK_MEMBERS, Permissions.FLAGS.BAN_MEMBERS])
+   * role.setPermissions([PermissionFlagsBits.KickMembers, PermissionFlagsBits.BanMembers])
    *   .then(updated => console.log(`Updated permissions to ${updated.permissions.bitfield}`))
    *   .catch(console.error);
    * @example
@@ -398,20 +358,8 @@ class Role extends Base {
    *   .then(updated => console.log(`Role position: ${updated.position}`))
    *   .catch(console.error);
    */
-  async setPosition(position, { relative, reason } = {}) {
-    const updatedRoles = await Util.setPosition(
-      this,
-      position,
-      relative,
-      this.guild._sortedRoles(),
-      this.client.api.guilds(this.guild.id).roles,
-      reason,
-    );
-    this.client.actions.GuildRolesPositionUpdate.handle({
-      guild_id: this.guild.id,
-      roles: updatedRoles,
-    });
-    return this;
+  setPosition(position, options = {}) {
+    return this.guild.roles.setPosition(this, position, options);
   }
 
   /**
@@ -431,12 +379,11 @@ class Role extends Base {
 
   /**
    * A link to the role's icon
-   * @param {StaticImageURLOptions} [options={}] Options for the image URL
+   * @param {ImageURLOptions} [options={}] Options for the image URL
    * @returns {?string}
    */
-  iconURL({ format, size } = {}) {
-    if (!this.icon) return null;
-    return this.client.rest.cdn.RoleIcon(this.id, this.icon, format, size);
+  iconURL(options = {}) {
+    return this.icon && this.client.rest.cdn.roleIcon(this.id, this.icon, options);
   }
 
   /**
@@ -479,31 +426,9 @@ class Role extends Base {
       permissions: this.permissions.toJSON(),
     };
   }
-
-  /**
-   * Compares the positions of two roles.
-   * @param {Role} role1 First role to compare
-   * @param {Role} role2 Second role to compare
-   * @returns {number} Negative number if the first role's position is lower (second role's is higher),
-   * positive number if the first's is higher (second's is lower), 0 if equal
-   * @deprecated Use {@link RoleManager#comparePositions} instead.
-   */
-  static comparePositions(role1, role2) {
-    if (!deprecationEmittedForComparePositions) {
-      process.emitWarning(
-        'The Role.comparePositions method is deprecated. Use RoleManager#comparePositions instead.',
-        'DeprecationWarning',
-      );
-
-      deprecationEmittedForComparePositions = true;
-    }
-
-    return role1.guild.roles.comparePositions(role1, role2);
-  }
 }
 
 exports.Role = Role;
-exports.deletedRoles = deletedRoles;
 
 /**
  * @external APIRole

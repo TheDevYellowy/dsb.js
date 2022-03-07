@@ -1,10 +1,11 @@
 'use strict';
 
-const BaseMessageComponent = require('./BaseMessageComponent');
-const MessageEmbed = require('./MessageEmbed');
+const { Buffer } = require('node:buffer');
+const { isJSONEncodable } = require('@discordjs/builders');
+const { MessageFlags } = require('discord-api-types/v9');
 const { RangeError } = require('../errors');
 const DataResolver = require('../util/DataResolver');
-const MessageFlags = require('../util/MessageFlags');
+const MessageFlagsBitField = require('../util/MessageFlagsBitField');
 const Util = require('../util/Util');
 
 /**
@@ -29,21 +30,14 @@ class MessagePayload {
     this.options = options;
 
     /**
-     * Data sendable to the API
+     * Body sendable to the API
      * @type {?APIMessage}
      */
-    this.data = null;
-
-    /**
-     * @typedef {Object} MessageFile
-     * @property {Buffer|string|Stream} attachment The original attachment that generated this file
-     * @property {string} name The name of this file
-     * @property {Buffer|Stream} file The file to be sent to the API
-     */
+    this.body = null;
 
     /**
      * Files sendable to the API
-     * @type {?MessageFile[]}
+     * @type {?RawFile[]}
      */
     this.files = null;
   }
@@ -117,10 +111,10 @@ class MessagePayload {
   }
 
   /**
-   * Resolves data.
+   * Resolves the body.
    * @returns {MessagePayload}
    */
-  resolveData() {
+  resolveBody() {
     if (this.data) return this;
     const isInteraction = this.isInteraction;
     const isWebhook = this.isWebhook;
@@ -137,7 +131,9 @@ class MessagePayload {
       }
     }
 
-    const components = this.options.components?.map(c => BaseMessageComponent.create(c).toJSON());
+    const components = this.options.components?.map(c =>
+      isJSONEncodable(c) ? c.toJSON() : this.target.client.options.jsonTransformer(c),
+    );
 
     let username;
     let avatarURL;
@@ -147,11 +143,20 @@ class MessagePayload {
     }
 
     let flags;
-    if (this.isMessage || this.isMessageManager) {
-      // eslint-disable-next-line eqeqeq
-      flags = this.options.flags != null ? new MessageFlags(this.options.flags).bitfield : this.target.flags?.bitfield;
-    } else if (isInteraction && this.options.ephemeral) {
-      flags = MessageFlags.FLAGS.EPHEMERAL;
+    if (
+      typeof this.options.flags !== 'undefined' ||
+      (this.isMessage && typeof this.options.reply === 'undefined') ||
+      this.isMessageManager
+    ) {
+      flags =
+        // eslint-disable-next-line eqeqeq
+        this.options.flags != null
+          ? new MessageFlagsBitField(this.options.flags).bitfield
+          : this.target.flags?.bitfield;
+    }
+
+    if (isInteraction && this.options.ephemeral) {
+      flags |= MessageFlags.Ephemeral;
     }
 
     let allowedMentions =
@@ -187,11 +192,13 @@ class MessagePayload {
       this.options.attachments = attachments;
     }
 
-    this.data = {
+    this.body = {
       content,
       tts,
       nonce,
-      embeds: this.options.embeds?.map(embed => new MessageEmbed(embed).toJSON()),
+      embeds: this.options.embeds?.map(embed =>
+        isJSONEncodable(embed) ? embed.toJSON() : this.target.client.options.jsonTransformer(embed),
+      ),
       components,
       username,
       avatar_url: avatarURL,
@@ -219,7 +226,7 @@ class MessagePayload {
   /**
    * Resolves a single file into an object sendable to the API.
    * @param {BufferResolvable|Stream|FileOptions|MessageAttachment} fileLike Something that could be resolved to a file
-   * @returns {Promise<MessageFile>}
+   * @returns {Promise<RawFile>}
    */
   static async resolveFile(fileLike) {
     let attachment;
@@ -247,8 +254,8 @@ class MessagePayload {
       name = fileLike.name ?? findName(attachment);
     }
 
-    const resource = await DataResolver.resolveFile(attachment);
-    return { attachment, name, file: resource };
+    const data = await DataResolver.resolveFile(attachment);
+    return { data, name };
   }
 
   /**
@@ -277,4 +284,9 @@ module.exports = MessagePayload;
 /**
  * @external APIMessage
  * @see {@link https://discord.com/developers/docs/resources/channel#message-object}
+ */
+
+/**
+ * @external RawFile
+ * @see {@link https://discord.js.org/#/docs/rest/main/typedef/RawFile}
  */

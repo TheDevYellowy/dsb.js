@@ -1,9 +1,9 @@
 'use strict';
 
 const { Collection } = require('@discordjs/collection');
+const { RESTJSONErrorCodes, Routes } = require('discord-api-types/v9');
 const BaseManager = require('./BaseManager');
 const { Error, TypeError } = require('../errors');
-const { ApplicationCommandPermissionTypes, APIErrors } = require('../util/Constants');
 
 /**
  * Manages API methods for permissions of Application Commands.
@@ -43,11 +43,15 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    * The APIRouter path to the commands
    * @param {Snowflake} guildId The guild's id to use in the path,
    * @param {Snowflake} [commandId] The application command's id
-   * @returns {Object}
+   * @returns {string}
    * @private
    */
   permissionsPath(guildId, commandId) {
-    return this.client.api.applications(this.client.application.id).guilds(guildId).commands(commandId).permissions;
+    if (commandId) {
+      return Routes.applicationCommandPermissions(this.client.application.id, guildId, commandId);
+    }
+
+    return Routes.guildApplicationCommandsPermissions(this.client.application.id, guildId);
   }
 
   /**
@@ -95,19 +99,12 @@ class ApplicationCommandPermissionsManager extends BaseManager {
   async fetch({ guild, command } = {}) {
     const { guildId, commandId } = this._validateOptions(guild, command);
     if (commandId) {
-      const data = await this.permissionsPath(guildId, commandId).get();
-      return data.permissions.map(perm => this.constructor.transformPermissions(perm, true));
+      const data = await this.client.rest.get(this.permissionsPath(guildId, commandId));
+      return data.permissions;
     }
 
-    const data = await this.permissionsPath(guildId).get();
-    return data.reduce(
-      (coll, perm) =>
-        coll.set(
-          perm.id,
-          perm.permissions.map(p => this.constructor.transformPermissions(p, true)),
-        ),
-      new Collection(),
-    );
+    const data = await this.client.rest.get(this.permissionsPath(guildId));
+    return data.reduce((coll, perm) => coll.set(perm.id, perm.permissions), new Collection());
   }
 
   /**
@@ -137,7 +134,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    *  permissions: [
    *    {
    *      id: '876543210987654321',
-   *      type: 'USER',
+   *      type: ApplicationCommandOptionType.User,
    *      permission: false,
    *    },
    * ]})
@@ -150,7 +147,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    *     id: '123456789012345678',
    *     permissions: [{
    *       id: '876543210987654321',
-   *       type: 'USER',
+   *       type: ApplicationCommandOptionType.User,
    *       permission: false,
    *     }],
    *   },
@@ -165,35 +162,16 @@ class ApplicationCommandPermissionsManager extends BaseManager {
       if (!Array.isArray(permissions)) {
         throw new TypeError('INVALID_TYPE', 'permissions', 'Array of ApplicationCommandPermissionData', true);
       }
-      const data = await this.permissionsPath(guildId, commandId).put({
-        data: { permissions: permissions.map(perm => this.constructor.transformPermissions(perm)) },
-      });
-      return data.permissions.map(perm => this.constructor.transformPermissions(perm, true));
+      const data = await this.client.rest.put(this.permissionsPath(guildId, commandId), { body: { permissions } });
+      return data.permissions;
     }
 
     if (!Array.isArray(fullPermissions)) {
       throw new TypeError('INVALID_TYPE', 'fullPermissions', 'Array of GuildApplicationCommandPermissionData', true);
     }
 
-    const APIPermissions = [];
-    for (const perm of fullPermissions) {
-      if (!Array.isArray(perm.permissions)) throw new TypeError('INVALID_ELEMENT', 'Array', 'fullPermissions', perm);
-      APIPermissions.push({
-        id: perm.id,
-        permissions: perm.permissions.map(p => this.constructor.transformPermissions(p)),
-      });
-    }
-    const data = await this.permissionsPath(guildId).put({
-      data: APIPermissions,
-    });
-    return data.reduce(
-      (coll, perm) =>
-        coll.set(
-          perm.id,
-          perm.permissions.map(p => this.constructor.transformPermissions(p, true)),
-        ),
-      new Collection(),
-    );
+    const data = await this.client.rest.put(this.permissionsPath(guildId), { body: fullPermissions });
+    return data.reduce((coll, perm) => coll.set(perm.id, perm.permissions), new Collection());
   }
 
   /**
@@ -212,7 +190,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    * guild.commands.permissions.add({ command: '123456789012345678', permissions: [
    *   {
    *     id: '876543211234567890',
-   *     type: 'ROLE',
+   *     type: ApplicationCommandPermissionType.Role,
    *     permission: false
    *   },
    * ]})
@@ -230,7 +208,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
     try {
       existing = await this.fetch({ guild: guildId, command: commandId });
     } catch (error) {
-      if (error.code !== APIErrors.UNKNOWN_APPLICATION_COMMAND_PERMISSIONS) throw error;
+      if (error.code !== RESTJSONErrorCodes.UnknownApplicationCommandPermissions) throw error;
     }
 
     const newPermissions = permissions.slice();
@@ -319,7 +297,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
     try {
       existing = await this.fetch({ guild: guildId, command: commandId });
     } catch (error) {
-      if (error.code !== APIErrors.UNKNOWN_APPLICATION_COMMAND_PERMISSIONS) throw error;
+      if (error.code !== RESTJSONErrorCodes.UnknownApplicationCommandPermissions) throw error;
     }
 
     const permissions = existing.filter(perm => !resolvedIds.includes(perm.id));
@@ -366,7 +344,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
     try {
       existing = await this.fetch({ guild: guildId, command: commandId });
     } catch (error) {
-      if (error.code !== APIErrors.UNKNOWN_APPLICATION_COMMAND_PERMISSIONS) throw error;
+      if (error.code !== RESTJSONErrorCodes.UnknownApplicationCommandPermissions) throw error;
     }
 
     return existing.some(perm => perm.id === resolvedId);
@@ -387,24 +365,6 @@ class ApplicationCommandPermissionsManager extends BaseManager {
       }
     }
     return { guildId, commandId };
-  }
-
-  /**
-   * Transforms an {@link ApplicationCommandPermissionData} object into something that can be used with the API.
-   * @param {ApplicationCommandPermissionData} permissions The permissions to transform
-   * @param {boolean} [received] Whether these permissions have been received from Discord
-   * @returns {APIApplicationCommandPermissions}
-   * @private
-   */
-  static transformPermissions(permissions, received) {
-    return {
-      id: permissions.id,
-      permission: permissions.permission,
-      type:
-        typeof permissions.type === 'number' && !received
-          ? permissions.type
-          : ApplicationCommandPermissionTypes[permissions.type],
-    };
   }
 }
 

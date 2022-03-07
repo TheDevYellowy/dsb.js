@@ -1,9 +1,10 @@
 'use strict';
 
-const fs = require('node:fs');
+const { Buffer } = require('node:buffer');
+const fs = require('node:fs/promises');
 const path = require('node:path');
 const stream = require('node:stream');
-const fetch = import('node-fetch');
+const { fetch } = require('undici');
 const { Error: DiscordError, TypeError } = require('../errors');
 const Invite = require('../structures/Invite');
 
@@ -65,8 +66,8 @@ class DataResolver extends null {
     if (typeof image === 'string' && image.startsWith('data:')) {
       return image;
     }
-    const file = await this.resolveFileAsBuffer(image);
-    return DataResolver.resolveBase64(file);
+    const file = await this.resolveFile(image);
+    return this.resolveBase64(file);
   }
 
   /**
@@ -101,43 +102,33 @@ class DataResolver extends null {
    */
 
   /**
-   * Resolves a BufferResolvable to a Buffer or a Stream.
-   * @param {BufferResolvable|Stream} resource The buffer or stream resolvable to resolve
-   * @returns {Promise<Buffer|Stream>}
-   */
-  static async resolveFile(resource) {
-    if (Buffer.isBuffer(resource) || resource instanceof stream.Readable) return resource;
-    if (typeof resource === 'string') {
-      if (/^https?:\/\//.test(resource)) {
-        const res = await fetch(resource);
-        return res.body;
-      }
-
-      return new Promise((resolve, reject) => {
-        const file = path.resolve(resource);
-        fs.stat(file, (err, stats) => {
-          if (err) return reject(err);
-          if (!stats.isFile()) return reject(new DiscordError('FILE_NOT_FOUND', file));
-          return resolve(fs.createReadStream(file));
-        });
-      });
-    }
-
-    throw new TypeError('REQ_RESOURCE_TYPE');
-  }
-
-  /**
    * Resolves a BufferResolvable to a Buffer.
    * @param {BufferResolvable|Stream} resource The buffer or stream resolvable to resolve
    * @returns {Promise<Buffer>}
    */
-  static async resolveFileAsBuffer(resource) {
-    const file = await this.resolveFile(resource);
-    if (Buffer.isBuffer(file)) return file;
+  static async resolveFile(resource) {
+    if (Buffer.isBuffer(resource)) return resource;
 
-    const buffers = [];
-    for await (const data of file) buffers.push(data);
-    return Buffer.concat(buffers);
+    if (resource instanceof stream.Readable) {
+      const buffers = [];
+      for await (const data of resource) buffers.push(data);
+      return Buffer.concat(buffers);
+    }
+
+    if (typeof resource === 'string') {
+      if (/^https?:\/\//.test(resource)) {
+        const res = await fetch(resource);
+        return Buffer.from(await res.arrayBuffer());
+      }
+
+      const file = path.resolve(resource);
+
+      const stats = await fs.stat(file);
+      if (!stats.isFile()) throw new DiscordError('FILE_NOT_FOUND', file);
+      return fs.readFile(file);
+    }
+
+    throw new TypeError('REQ_RESOURCE_TYPE');
   }
 }
 

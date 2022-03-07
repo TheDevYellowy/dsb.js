@@ -1,6 +1,8 @@
 'use strict';
 
-const { Events, ThreadChannelTypes, SweeperKeys } = require('./Constants');
+const { setInterval, clearInterval } = require('node:timers');
+const { ThreadChannelTypes, SweeperKeys } = require('./Constants');
+const Events = require('./Events');
 const { TypeError } = require('../errors/DJSError.js');
 
 /**
@@ -70,7 +72,7 @@ class Sweepers {
     const globalCommands = this.client.application?.commands.cache.sweep(filter) ?? 0;
 
     this.client.emit(
-      Events.CACHE_SWEEP,
+      Events.CacheSweep,
       `Swept ${globalCommands} global application commands and ${guildCommands} guild commands in ${guilds} guilds.`,
     );
     return guildCommands + globalCommands;
@@ -135,12 +137,12 @@ class Sweepers {
     let messages = 0;
 
     for (const channel of this.client.channels.cache.values()) {
-      if (!channel.isText()) continue;
+      if (!channel.isTextBased()) continue;
 
       channels++;
       messages += channel.messages.cache.sweep(filter);
     }
-    this.client.emit(Events.CACHE_SWEEP, `Swept ${messages} messages in ${channels} text-based channels.`);
+    this.client.emit(Events.CacheSweep, `Swept ${messages} messages in ${channels} text-based channels.`);
     return messages;
   }
 
@@ -167,7 +169,7 @@ class Sweepers {
     let reactions = 0;
 
     for (const channel of this.client.channels.cache.values()) {
-      if (!channel.isText()) continue;
+      if (!channel.isTextBased()) continue;
       channels++;
 
       for (const message of channel.messages.cache.values()) {
@@ -176,7 +178,7 @@ class Sweepers {
       }
     }
     this.client.emit(
-      Events.CACHE_SWEEP,
+      Events.CacheSweep,
       `Swept ${reactions} reactions on ${messages} messages in ${channels} text-based channels.`,
     );
     return reactions;
@@ -189,6 +191,15 @@ class Sweepers {
    */
   sweepStageInstances(filter) {
     return this._sweepGuildDirectProp('stageInstances', filter, { outputName: 'stage instances' }).items;
+  }
+
+  /**
+   * Sweeps all guild stickers and removes the ones which are indicated by the filter.
+   * @param {Function} filter The function used to determine which stickers will be removed from the caches.
+   * @returns {number} Amount of stickers that were removed from the caches
+   */
+  sweepStickers(filter) {
+    return this._sweepGuildDirectProp('stickers', filter).items;
   }
 
   /**
@@ -209,7 +220,7 @@ class Sweepers {
       threads++;
       members += channel.members.cache.sweep(filter);
     }
-    this.client.emit(Events.CACHE_SWEEP, `Swept ${members} thread members in ${threads} threads.`);
+    this.client.emit(Events.CacheSweep, `Swept ${members} thread members in ${threads} threads.`);
     return members;
   }
 
@@ -240,7 +251,7 @@ class Sweepers {
         this.client.channels._remove(key);
       }
     }
-    this.client.emit(Events.CACHE_SWEEP, `Swept ${threads} threads.`);
+    this.client.emit(Events.CacheSweep, `Swept ${threads} threads.`);
     return threads;
   }
 
@@ -256,7 +267,7 @@ class Sweepers {
 
     const users = this.client.users.cache.sweep(filter);
 
-    this.client.emit(Events.CACHE_SWEEP, `Swept ${users} users.`);
+    this.client.emit(Events.CacheSweep, `Swept ${users} users.`);
 
     return users;
   }
@@ -352,7 +363,7 @@ class Sweepers {
 
   /**
    * Creates a sweep filter that sweeps outdated messages (edits taken into account)
-   * @param {number} [lifetime=3600] How long ago a message has to hvae been sent or  edited to be valid for sweeping
+   * @param {number} [lifetime=3600] How long ago a message has to have been sent or edited to be valid for sweeping
    * @returns {GlobalSweepFilter}
    */
   static outdatedMessageSweepFilter(lifetime = 3600) {
@@ -374,11 +385,11 @@ class Sweepers {
    * Sweep a direct sub property of all guilds
    * @param {string} key The name of the property
    * @param {Function} filter Filter function passed to sweep
-   * @param {SweepEventOptions} [eventOptions] Options for the Client event emitted here
+   * @param {SweepEventOptions} [eventOptions={}] Options for the Client event emitted here
    * @returns {Object} Object containing the number of guilds swept and the number of items swept
    * @private
    */
-  _sweepGuildDirectProp(key, filter, { emit = true, outputName }) {
+  _sweepGuildDirectProp(key, filter, { emit = true, outputName } = {}) {
     if (typeof filter !== 'function') {
       throw new TypeError('INVALID_TYPE', 'filter', 'function');
     }
@@ -394,7 +405,7 @@ class Sweepers {
     }
 
     if (emit) {
-      this.client.emit(Events.CACHE_SWEEP, `Swept ${items} ${outputName ?? key} in ${guilds} guilds.`);
+      this.client.emit(Events.CacheSweep, `Swept ${items} ${outputName ?? key} in ${guilds} guilds.`);
     }
 
     return { guilds, items };

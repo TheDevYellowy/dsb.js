@@ -44,7 +44,6 @@ class ActionsManager {
     this.register(require('./MessageReactionRemoveEmoji'));
     this.register(require('./MessageUpdate'));
     this.register(require('./PresenceUpdate'));
-    this.register(require('./RelationshipAdd'));
     this.register(require('./StageInstanceCreate'));
     this.register(require('./StageInstanceDelete'));
     this.register(require('./StageInstanceUpdate'));

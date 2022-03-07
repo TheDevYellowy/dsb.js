@@ -3,6 +3,7 @@
 const EventEmitter = require('node:events');
 const fs = require('node:fs');
 const path = require('node:path');
+const process = require('node:process');
 const { setTimeout: sleep } = require('node:timers/promises');
 const { Collection } = require('@discordjs/collection');
 const Shard = require('./Shard');
@@ -35,7 +36,7 @@ class ShardingManager extends EventEmitter {
    * @property {boolean} [respawn=true] Whether shards should automatically respawn upon exiting
    * @property {string[]} [shardArgs=[]] Arguments to pass to the shard script when spawning
    * (only available when mode is set to 'process')
-   * @property {string} [execArgv=[]] Arguments to pass to the shard script executable when spawning
+   * @property {string[]} [execArgv=[]] Arguments to pass to the shard script executable when spawning
    * (only available when mode is set to 'process')
    * @property {string} [token] Token to use for automatic shard count and passing to shards
    */

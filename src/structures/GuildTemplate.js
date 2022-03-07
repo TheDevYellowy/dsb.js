@@ -1,8 +1,10 @@
 'use strict';
 
+const { setTimeout, clearTimeout } = require('node:timers');
+const { RouteBases, Routes } = require('discord-api-types/v9');
 const Base = require('./Base');
-const { Events } = require('../util/Constants');
 const DataResolver = require('../util/DataResolver');
+const Events = require('../util/Events');
 
 /**
  * Represents the template for a guild.
@@ -65,18 +67,18 @@ class GuildTemplate extends Base {
 
     if ('created_at' in data) {
       /**
-       * The time when this template was created at
-       * @type {Date}
+       * The timestamp of when this template was created at
+       * @type {number}
        */
-      this.createdAt = new Date(data.created_at);
+      this.createdTimestamp = Date.parse(data.created_at);
     }
 
     if ('updated_at' in data) {
       /**
-       * The time when this template was last synced to the guild
-       * @type {Date}
+       * The timestamp of when this template was last synced to the guild
+       * @type {number}
        */
-      this.updatedAt = new Date(data.updated_at);
+      this.updatedTimestamp = Date.parse(data.updated_at);
     }
 
     if ('source_guild_id' in data) {
@@ -113,8 +115,8 @@ class GuildTemplate extends Base {
    */
   async createGuild(name, icon) {
     const { client } = this;
-    const data = await client.api.guilds.templates(this.code).post({
-      data: {
+    const data = await client.rest.post(Routes.template(this.code), {
+      body: {
         name,
         icon: await DataResolver.resolveImage(icon),
       },
@@ -124,7 +126,7 @@ class GuildTemplate extends Base {
 
     return new Promise(resolve => {
       const resolveGuild = guild => {
-        client.off(Events.GUILD_CREATE, handleGuild);
+        client.off(Events.GuildCreate, handleGuild);
         client.decrementMaxListeners();
         resolve(guild);
       };
@@ -137,7 +139,7 @@ class GuildTemplate extends Base {
       };
 
       client.incrementMaxListeners();
-      client.on(Events.GUILD_CREATE, handleGuild);
+      client.on(Events.GuildCreate, handleGuild);
 
       const timeout = setTimeout(() => resolveGuild(client.guilds._add(data)), 10_000).unref();
     });
@@ -156,7 +158,9 @@ class GuildTemplate extends Base {
    * @returns {Promise<GuildTemplate>}
    */
   async edit({ name, description } = {}) {
-    const data = await this.client.api.guilds(this.guildId).templates(this.code).patch({ data: { name, description } });
+    const data = await this.client.rest.patch(Routes.guildTemplate(this.guildId, this.code), {
+      body: { name, description },
+    });
     return this._patch(data);
   }
 
@@ -165,7 +169,7 @@ class GuildTemplate extends Base {
    * @returns {Promise<GuildTemplate>}
    */
   async delete() {
-    await this.client.api.guilds(this.guildId).templates(this.code).delete();
+    await this.client.rest.delete(Routes.guildTemplate(this.guildId, this.code));
     return this;
   }
 
@@ -174,26 +178,26 @@ class GuildTemplate extends Base {
    * @returns {Promise<GuildTemplate>}
    */
   async sync() {
-    const data = await this.client.api.guilds(this.guildId).templates(this.code).put();
+    const data = await this.client.rest.put(Routes.guildTemplate(this.guildId, this.code));
     return this._patch(data);
   }
 
   /**
-   * The timestamp of when this template was created at
-   * @type {number}
+   * The time when this template was created at
+   * @type {Date}
    * @readonly
    */
-  get createdTimestamp() {
-    return this.createdAt.getTime();
+  get createdAt() {
+    return new Date(this.createdTimestamp);
   }
 
   /**
-   * The timestamp of when this template was last synced to the guild
-   * @type {number}
+   * The time when this template was last synced to the guild
+   * @type {Date}
    * @readonly
    */
-  get updatedTimestamp() {
-    return this.updatedAt.getTime();
+  get updatedAt() {
+    return new Date(this.updatedTimestamp);
   }
 
   /**
@@ -211,7 +215,7 @@ class GuildTemplate extends Base {
    * @readonly
    */
   get url() {
-    return `${this.client.options.http.template}/${this.code}`;
+    return `${RouteBases.template}/${this.code}`;
   }
 
   /**
