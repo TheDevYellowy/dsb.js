@@ -1,7 +1,7 @@
 'use strict';
 
 const EventEmitter = require('node:events');
-const { REST } = require('@discordjs/rest');
+const RESTManager = require('../rest/RESTManager');
 const { TypeError } = require('../errors');
 const Options = require('../util/Options');
 const Util = require('../util/Util');
@@ -28,7 +28,11 @@ class BaseClient extends EventEmitter {
      * The REST manager of the client
      * @type {REST}
      */
-    this.rest = new REST(this.options.rest);
+    this.rest = new RESTManager(this.options.rest);
+  }
+
+  get api() {
+    return this.rest.api;
   }
 
   /**
@@ -36,8 +40,7 @@ class BaseClient extends EventEmitter {
    * @returns {void}
    */
   destroy() {
-    this.rest.requestManager.clearHashSweeper();
-    this.rest.requestManager.clearHandlerSweeper();
+    if(this.rest.sweepInterval) clearInterval(this.rest.sweepInterval);
   }
 
   /**
