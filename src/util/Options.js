@@ -77,6 +77,7 @@ class Options extends null {
       messageCacheLifetime: 0,
       messageSweepInterval: 0,
       invalidRequestWarningInterval: 0,
+      intents: 32767,
       partials: [],
       restWsBridgeTimeout: 5_000,
       restRequestTimeout: 15_000,
