@@ -30,7 +30,7 @@ class APIRequest {
     this.path = `${path}${queryString && `?${queryString}`}`;
   }
 
-  make() {
+  async make() {
     agent ??= new https.Agent({ ...this.client.options.http.agent, keepAlive: true });
 
     const API =
