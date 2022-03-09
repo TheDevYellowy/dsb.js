@@ -15,6 +15,8 @@
 
 discordjs-selfbot is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the discord api
 
+<strong>I am in no way responsible for what happens to your account. What you do is on you!</strong>
+
 ## Installation
 
 **Node.js 16.9.0 or newer is required**
