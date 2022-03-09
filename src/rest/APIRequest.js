@@ -3,7 +3,7 @@
 const https = require('node:https');
 const { setTimeout } = require('node:timers');
 const FormData = require('form-data');
-const fetch = require('node-fetch');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 const { UserAgent } = require('../util/Constants');
 
 let agent = null;

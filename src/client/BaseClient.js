@@ -28,7 +28,7 @@ class BaseClient extends EventEmitter {
      * The REST manager of the client
      * @type {REST}
      */
-    this.rest = new RESTManager(this.options.rest);
+    this.rest = new RESTManager(this);
   }
 
   get api() {

@@ -12,6 +12,8 @@ const BaseGuildEmojiManager = require('../managers/BaseGuildEmojiManager');
 const ChannelManager = require('../managers/ChannelManager');
 const GuildManager = require('../managers/GuildManager');
 const UserManager = require('../managers/UserManager');
+const FriendsManager = require('../managers/FriendsManager');
+const BlockedManager = require('../managers/BlockedManager');
 const ShardClientUtil = require('../sharding/ShardClientUtil');
 const ClientPresence = require('../structures/ClientPresence');
 const GuildPreview = require('../structures/GuildPreview');
@@ -108,6 +110,8 @@ class Client extends BaseClient {
      * @type {UserManager}
      */
     this.users = new UserManager(this);
+    this.friends = new FriendsManager(this);
+    this.blocked = new BlockedManager(this);
 
     /**
      * All of the guilds the client is currently handling, mapped by their ids -
@@ -212,7 +216,7 @@ class Client extends BaseClient {
   async login(token = this.token) {
     if (!token || typeof token !== 'string') throw new Error('TOKEN_INVALID');
     this.token = token = token.replace(/^(Bot|Bearer)\s*/i, '');
-    this.rest.setToken(token);
+    //this.rest.setToken(token);
     this.emit(
       Events.Debug,
       `Provided token: ${token
@@ -255,7 +259,7 @@ class Client extends BaseClient {
     this.sweepers.destroy();
     this.ws.destroy();
     this.token = null;
-    this.rest.setToken(null);
+    //this.rest.setToken(null);
   }
 
   /**

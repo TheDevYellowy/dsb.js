@@ -501,7 +501,7 @@ class WebSocketShard extends EventEmitter {
 
         this.emit(ShardEvents.AllReady, this.expectedGuilds);
       },
-      hasGuildsIntent ? waitGuildTimeout : 0,
+      0,
     ).unref();
   }
 

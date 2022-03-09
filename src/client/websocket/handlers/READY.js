@@ -1,9 +1,12 @@
 'use strict';
 
 const ClientApplication = require('../../../structures/ClientApplication');
+const User = require('../../../structures/User');
 let ClientUser;
 
 module.exports = (client, { d: data }, shard) => {
+  //console.log(data);
+
   if (client.user) {
     client.user._patch(data.user);
   } else {
@@ -15,6 +18,14 @@ module.exports = (client, { d: data }, shard) => {
   for (const guild of data.guilds) {
     guild.shardId = shard.id;
     client.guilds._add(guild);
+  }
+
+  for (const r of data.relationships) {
+    if(r.type == 1) {
+      client.friends.cache.set(r.id, new User(client, r.user));
+    } else if(r.type == 2) {
+      client.blocked.cache.set(r.id, new User(client, r.user));
+    }
   }
 
   if (client.application) {

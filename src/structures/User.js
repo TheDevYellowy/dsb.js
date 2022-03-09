@@ -14,8 +14,6 @@ class User extends Base {
   constructor(client, data) {
     super(client);
 
-    this.client = client;
-
     /**
      * The user's id
      * @type {Snowflake}
@@ -28,9 +26,9 @@ class User extends Base {
 
     this.flags = null;
 
-    this.friend = this.client.friends.has(this.id);
+    this.friend = client.friends.cache.has(this.id);
 
-    this.blocked = this.client.blocked.has(this.id);
+    this.blocked = client.blocked.cache.has(this.id);
 
     
 

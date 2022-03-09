@@ -1,7 +1,6 @@
 'use strict';
 
 const process = require('node:process');
-const { DefaultRestOptions } = require('@discordjs/rest');
 const Transformers = require('./Transformers');
 
 /**
@@ -75,22 +74,39 @@ class Options extends null {
       waitGuildTimeout: 15_000,
       shardCount: 1,
       makeCache: this.cacheWithLimits(this.defaultMakeCacheSettings),
+      messageCacheLifetime: 0,
+      messageSweepInterval: 0,
+      invalidRequestWarningInterval: 0,
       partials: [],
+      restWsBridgeTimeout: 5_000,
+      restRequestTimeout: 15_000,
+      restGlobalRateLimit: 0,
+      retryLimit: 1,
+      restTimeOffset: 500,
+      restSweepInterval: 60,
       failIfNotExists: true,
+      userAgentSuffix: [],
       presence: {},
-      sweepers: this.defaultSweeperSettings,
+      sweepers: {},
       ws: {
         large_threshold: 50,
         compress: false,
         properties: {
           $os: 'iPhone14,5',
           $browser: 'Discord iOS',
-          $device: 'iPhone14,5 OS 15.5',
+          $device: 'iPhone14,5 OS 15.2',
         },
         version: 9,
       },
-      rest: DefaultRestOptions,
-      jsonTransformer: Transformers.toSnakeCase,
+      http: {
+        agent: {},
+        version: 9,
+        api: 'https://discord.com/api',
+        cdn: 'https://cdn.discordapp.com',
+        invite: 'https://discord.gg',
+        template: 'https://discord.new',
+        scheduledEvent: 'https://discord.com/events',
+      },
     };
   }
 

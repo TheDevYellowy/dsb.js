@@ -14,6 +14,8 @@ class Application extends Base {
   }
 
   _patch(data) {
+    if(!data) return;
+
     /**
      * The application's id
      * @type {Snowflake}
