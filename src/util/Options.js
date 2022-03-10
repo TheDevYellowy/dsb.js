@@ -100,6 +100,23 @@ class Options extends null {
         version: 9,
       },
       http: {
+        headers: {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Accept-Language": 'en-us,en;q=0.9',
+          "Cache-Control": "no-cache",
+          "Pragma": "no-cache",
+          "Referer": "https://discord.com/channels/@me",
+          "Sec-Ch-Ua": '" Not A;Brand";v="99" "',
+          "Sec-Ch-Ua-Mobile": '?0',
+          "Sec-Ch-Ua-Platform": '"iOS"',
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-origin",
+          "X-Debug-Options": "bugReporterEnabled",
+          "X-Discord-Locale": 'en-us',
+          "Origin": "https://discord.com"
+        },
         agent: {},
         version: 9,
         api: 'https://discord.com/api',

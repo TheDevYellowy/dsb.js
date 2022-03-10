@@ -1,6 +1,6 @@
 {
-  "name": "discordjs-selfbot",
-  "version": "13.6.0",
+  "name": "dsb.js",
+  "version": "1.0.0",
   "description": "A unofficial discord.js fork for creating selfbots",
   "main": "./src/index.js",
   "types": "./typings/index.d.ts",

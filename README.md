@@ -13,7 +13,7 @@
 
 ## About
 
-discordjs-selfbot is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the discord api
+dsb is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the discord api
 
 <strong>I am in no way responsible for what happens to your account. What you do is on you!</strong>
 
@@ -22,13 +22,13 @@ discordjs-selfbot is a [Node.js](https://nodejs.org) module that allows user acc
 **Node.js 16.9.0 or newer is required**
 
 ```sh-session
-npm install discordjs-selfbot
+npm install dsb.js
 ```
 
 ## Example
 
 ```js
-const { Client } = require('discordjs-selfbot');
+const { Client } = require('dsb.js');
 const client = new Client(); // intents and partials are already set so you don't have to define them
 
 client.on('ready', async () => {
