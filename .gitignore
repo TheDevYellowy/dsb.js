@@ -77,3 +77,6 @@ deploy/deploy_key.pub
 .tmp/
 .idea/
 .DS_Store
+
+# Custom
+data/

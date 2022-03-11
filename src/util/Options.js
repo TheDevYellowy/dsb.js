@@ -103,7 +103,7 @@ class Options extends null {
         headers: {
           "Accept": "*/*",
           "Accept-Encoding": "gzip, deflate, br",
-          "Accept-Language": 'en-us,en;q=0.9',
+          "Accept-Language": 'en-US,en;q=0.9',
           "Cache-Control": "no-cache",
           "Pragma": "no-cache",
           "Referer": "https://discord.com/channels/@me",
@@ -114,7 +114,7 @@ class Options extends null {
           "Sec-Fetch-Mode": "cors",
           "Sec-Fetch-Site": "same-origin",
           "X-Debug-Options": "bugReporterEnabled",
-          "X-Discord-Locale": 'en-us',
+          "X-Discord-Locale": 'en-US',
           "Origin": "https://discord.com"
         },
         agent: {},

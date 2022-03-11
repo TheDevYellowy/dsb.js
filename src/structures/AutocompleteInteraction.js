@@ -76,7 +76,7 @@ class AutocompleteInteraction extends Interaction {
   async respond(options) {
     if (this.responded) throw new Error('INTERACTION_ALREADY_REPLIED');
 
-    await this.client.rest.post(Routes.interactionCallback(this.id, this.token), {
+    await this.client.api.interactions(this.id, this.token).callback.post({
       body: {
         type: InteractionResponseType.ApplicationCommandAutocompleteResult,
         data: {
@@ -84,7 +84,7 @@ class AutocompleteInteraction extends Interaction {
         },
       },
       auth: false,
-    });
+    })
     this.responded = true;
   }
 }

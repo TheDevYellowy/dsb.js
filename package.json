@@ -1,6 +1,6 @@
 {
   "name": "dsb.js",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A unofficial discord.js fork for creating selfbots",
   "main": "./src/index.js",
   "types": "./typings/index.d.ts",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TheDevYellowy/discordjs-selfbot.git"
+    "url": "git+https://github.com/TheDevYellowy/dsb.js.git"
   },
   "keywords": [
     "discord.js",
@@ -27,9 +27,9 @@
   "author": "Yellowy",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/TheDevYellowy/discordjs-selfbot/issues"
+    "url": "https://github.com/TheDevYellowy/dsb.js/issues"
   },
-  "homepage": "https://github.com/TheDevYellowy/discordjs-selfbot#readme",
+  "homepage": "https://github.com/TheDevYellowy/dsb.js#readme",
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
     "@discordjs/collection": "^0.5.0",

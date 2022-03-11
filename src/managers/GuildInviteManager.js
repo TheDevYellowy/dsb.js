@@ -156,12 +156,12 @@ class GuildInviteManager extends CachedManager {
   }
 
   async _fetchMany(cache) {
-    const data = await this.client.rest.get(Routes.guildInvites(this.guild.id));
+    const data = await this.client.api.guilds(this.guild.id).invites.get();
     return data.reduce((col, invite) => col.set(invite.code, this._add(invite, cache)), new Collection());
   }
 
   async _fetchChannelMany(channelId, cache) {
-    const data = await this.client.rest.get(Routes.channelInvites(channelId));
+    const data = await this.client.api.channels(channelId).invites.get();
     return data.reduce((col, invite) => col.set(invite.code, this._add(invite, cache)), new Collection());
   }
 
@@ -183,7 +183,7 @@ class GuildInviteManager extends CachedManager {
     const id = this.guild.channels.resolveId(channel);
     if (!id) throw new Error('GUILD_CHANNEL_RESOLVE');
 
-    const invite = await this.client.rest.post(Routes.channelInvites(id), {
+    const invite = await this.client.api.channels(id).invites.post({
       body: {
         temporary,
         max_age: maxAge,
@@ -207,7 +207,7 @@ class GuildInviteManager extends CachedManager {
   async delete(invite, reason) {
     const code = DataResolver.resolveInviteCode(invite);
 
-    await this.client.rest.delete(Routes.invite(code), { reason });
+    await this.client.api.invites(code).delete({ reason });
   }
 }
 

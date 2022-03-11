@@ -99,7 +99,7 @@ class PermissionOverwriteManager extends CachedManager {
 
     const { allow, deny } = PermissionOverwrites.resolveOverwriteOptions(options, existing);
 
-    await this.client.rest.put(Routes.channelPermission(this.channel.id, userOrRoleId), {
+    await this.client.api.channels(this.channel.id).permissions(userOrRoleId).put({
       body: { id: userOrRoleId, type, allow, deny },
       reason,
     });
@@ -154,7 +154,7 @@ class PermissionOverwriteManager extends CachedManager {
     const userOrRoleId = this.channel.guild.roles.resolveId(userOrRole) ?? this.client.users.resolveId(userOrRole);
     if (!userOrRoleId) throw new TypeError('INVALID_TYPE', 'parameter', 'User nor a Role');
 
-    await this.client.rest.delete(Routes.channelPermission(this.channel.id, userOrRoleId), { reason });
+    await this.client.api.channels(this.channel.id).permissions(userOrRoleId).delete({ reason });
     return this.channel;
   }
 }

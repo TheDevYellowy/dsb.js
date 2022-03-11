@@ -192,7 +192,7 @@ class Integration extends Base {
    * @param {string} [reason] Reason for deleting this integration
    */
   async delete(reason) {
-    await this.client.rest.delete(Routes.guildIntegration(this.guild.id, this.id), { reason });
+    await this.client.api.guilds(this.guild.id).integrations(this.id).delete({ reason });
     return this;
   }
 

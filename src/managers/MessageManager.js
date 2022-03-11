@@ -83,7 +83,7 @@ class MessageManager extends CachedManager {
    *   .catch(console.error);
    */
   async fetchPinned(cache = true) {
-    const data = await this.client.rest.get(Routes.channelPins(this.channel.id));
+    const data = await this.client.api.channels(this.channel.id).pins.get();
     const messages = new Collection();
     for (const message of data) messages.set(message.id, this._add(message, cache));
     return messages;
@@ -130,7 +130,7 @@ class MessageManager extends CachedManager {
     )
       .resolveBody()
       .resolveFiles();
-    const d = await this.client.rest.patch(Routes.channelMessage(this.channel.id, messageId), { body, files });
+    const d = await this.client.api.channels(this.channel.id).messages(messageId).patch({ body, files });
 
     const existing = this.cache.get(messageId);
     if (existing) {
@@ -150,7 +150,7 @@ class MessageManager extends CachedManager {
     message = this.resolveId(message);
     if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
 
-    const data = await this.client.rest.post(Routes.channelMessageCrosspost(this.channel.id, message));
+    const data = await this.client.api.channels(this.channel.id).messages(message).crosspost.post();
     return this.cache.get(data.id) ?? this._add(data);
   }
 
@@ -164,7 +164,7 @@ class MessageManager extends CachedManager {
     message = this.resolveId(message);
     if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
 
-    await this.client.rest.put(Routes.channelPins(this.channel.id, message), { reason });
+    await this.client.api.channels(this.channel.id).pins(message).put({ reason });
   }
 
   /**
@@ -177,7 +177,7 @@ class MessageManager extends CachedManager {
     message = this.resolveId(message);
     if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
 
-    await this.client.rest.delete(Routes.channelPin(this.channel.id, message), { reason });
+    await this.client.api.channels(this.channel.id).pins(message).delete({ reason });
   }
 
   /**
@@ -197,7 +197,7 @@ class MessageManager extends CachedManager {
       ? `${emoji.animated ? 'a:' : ''}${emoji.name}:${emoji.id}`
       : encodeURIComponent(emoji.name);
 
-    await this.client.rest.put(Routes.channelMessageOwnReaction(this.channel.id, message, emojiId));
+    await this.client.api.channels(this.channel.id).messages(message).reactions(emojiId, '@me').put();
   }
 
   /**
@@ -209,7 +209,7 @@ class MessageManager extends CachedManager {
     message = this.resolveId(message);
     if (!message) throw new TypeError('INVALID_TYPE', 'message', 'MessageResolvable');
 
-    await this.client.rest.delete(Routes.channelMessage(this.channel.id, message));
+    await this.client.api.channels(this.channel.id).messages(message).delete();
   }
 
   async _fetchId(messageId, cache, force) {
@@ -218,12 +218,12 @@ class MessageManager extends CachedManager {
       if (existing && !existing.partial) return existing;
     }
 
-    const data = await this.client.rest.get(Routes.channelMessage(this.channel.id, messageId));
+    const data = await this.client.api.channels(this.channel.id).messages(messageId).get();
     return this._add(data, cache);
   }
 
   async _fetchMany(options = {}, cache) {
-    const data = await this.client.rest.get(Routes.channelMessages(this.channel.id), {
+    const data = await this.client.api.channels(this.channel.id).messages.get({
       query: new URLSearchParams(options),
     });
     const messages = new Collection();

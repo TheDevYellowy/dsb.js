@@ -78,7 +78,7 @@ class ThreadMemberManager extends CachedManager {
   async add(member, reason) {
     const id = member === '@me' ? member : this.client.users.resolveId(member);
     if (!id) throw new TypeError('INVALID_TYPE', 'member', 'UserResolvable');
-    await this.client.rest.put(Routes.threadMembers(this.thread.id, id), { reason });
+    await this.client.api.channels(this.thread.id, 'thread-members', id).put({ reason });
     return id;
   }
 
@@ -89,7 +89,7 @@ class ThreadMemberManager extends CachedManager {
    * @returns {Promise<Snowflake>}
    */
   async remove(id, reason) {
-    await this.client.rest.delete(Routes.threadMembers(this.thread.id, id), { reason });
+    await this.client.api.channels(this.thread.id, 'thread-members', id).delete({ reason });
     return id;
   }
 
@@ -99,12 +99,12 @@ class ThreadMemberManager extends CachedManager {
       if (existing) return existing;
     }
 
-    const data = await this.client.rest.get(Routes.threadMembers(this.thread.id, memberId));
+    const data = await this.client.api.channels(this.thread.id, 'thread-members', memberId).get();
     return this._add(data, cache);
   }
 
   async _fetchMany(cache) {
-    const raw = await this.client.rest.get(Routes.threadMembers(this.thread.id));
+    const raw = await this.client.api.channels(this.thread.id, 'thread-members');
     return raw.reduce((col, member) => col.set(member.user_id, this._add(member, cache)), new Collection());
   }
 

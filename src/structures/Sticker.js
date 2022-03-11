@@ -171,7 +171,7 @@ class Sticker extends Base {
    * @returns {Promise<Sticker>}
    */
   async fetch() {
-    const data = await this.client.rest.get(Routes.sticker(this.id));
+    const data = await this.client.api.stickers(this.id).get();
     this._patch(data);
     return this;
   }

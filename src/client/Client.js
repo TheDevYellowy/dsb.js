@@ -156,6 +156,12 @@ class Client extends BaseClient {
     }
 
     /**
+     * used for interacitons
+     * @type {?String}
+     */
+    this.session_id = null;
+
+    /**
      * User that the client is logged in as
      * @type {?ClientUser}
      */
@@ -288,7 +294,7 @@ class Client extends BaseClient {
     if (options?.guildScheduledEventId) {
       query.set('guild_scheduled_event_id', options.guildScheduledEventId);
     }
-    const data = await this.rest.get(Routes.invite(code), { query });
+    const data = await this.api.invites(code).get({ query });
     return new Invite(this, data);
   }
 
@@ -303,7 +309,7 @@ class Client extends BaseClient {
    */
   async fetchGuildTemplate(template) {
     const code = DataResolver.resolveGuildTemplateCode(template);
-    const data = await this.rest.get(Routes.template(code));
+    const data = await this.api.guilds.templates(code).get();
     return new GuildTemplate(this, data);
   }
 
@@ -318,7 +324,7 @@ class Client extends BaseClient {
    *   .catch(console.error);
    */
   async fetchWebhook(id, token) {
-    const data = await this.rest.get(Routes.webhook(id, token));
+    const data = await this.api.webhook(id, token).get();
     return new Webhook(this, { token, ...data });
   }
 
@@ -331,7 +337,7 @@ class Client extends BaseClient {
    *   .catch(console.error);
    */
   async fetchVoiceRegions() {
-    const apiRegions = await this.rest.get(Routes.voiceRegions());
+    const apiRegions = await this.api.voice.regions.get();
     const regions = new Collection();
     for (const region of apiRegions) regions.set(region.id, new VoiceRegion(region));
     return regions;
@@ -347,7 +353,7 @@ class Client extends BaseClient {
    *   .catch(console.error);
    */
   async fetchSticker(id) {
-    const data = await this.rest.get(Routes.sticker(id));
+    const data = await this.api.stickers(id).get();
     return new Sticker(this, data);
   }
 
@@ -360,7 +366,7 @@ class Client extends BaseClient {
    *   .catch(console.error);
    */
   async fetchPremiumStickerPacks() {
-    const data = await this.rest.get(Routes.nitroStickerPacks());
+    const data = await this.api('sticker-packs').get();
     return new Collection(data.sticker_packs.map(p => [p.id, new StickerPack(this, p)]));
   }
 
@@ -372,7 +378,7 @@ class Client extends BaseClient {
   async fetchGuildPreview(guild) {
     const id = this.guilds.resolveId(guild);
     if (!id) throw new TypeError('INVALID_TYPE', 'guild', 'GuildResolvable');
-    const data = await this.rest.get(Routes.guildPreview(id));
+    const data = await this.api.guilds(id).preview.get();
     return new GuildPreview(this, data);
   }
 
@@ -384,7 +390,7 @@ class Client extends BaseClient {
   async fetchGuildWidget(guild) {
     const id = this.guilds.resolveId(guild);
     if (!id) throw new TypeError('INVALID_TYPE', 'guild', 'GuildResolvable');
-    const data = await this.rest.get(Routes.guildWidgetJSON(id));
+    const data = await this.api.guilds(id, 'widget.json').get();
     return new Widget(this, data);
   }
 

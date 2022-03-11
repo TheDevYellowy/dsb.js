@@ -97,7 +97,7 @@ class Channel extends Base {
    *   .catch(console.error);
    */
   async delete() {
-    await this.client.rest.delete(Routes.channel(this.id));
+    await this.client.api.channels(this.id).delete();
     return this;
   }
 

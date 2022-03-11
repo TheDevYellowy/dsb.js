@@ -206,7 +206,7 @@ class Webhook {
     }
 
     const { body, files } = await messagePayload.resolveFiles();
-    const d = await this.client.rest.post(Routes.webhook(this.id, this.token), { body, files, query, auth: false });
+    const d = await this.client.api.webhooks(this.id, this.token).post({ body, files, query, auth: false });
     return this.client.channels?.cache.get(d.channel_id)?.messages._add(d, false) ?? d;
   }
 
@@ -231,7 +231,7 @@ class Webhook {
   async sendSlackMessage(body) {
     if (!this.token) throw new Error('WEBHOOK_TOKEN_UNAVAILABLE');
 
-    const data = await this.client.rest.post(Routes.webhookPlatform(this.id, this.token, 'slack'), {
+    const data = await this.client.api.webhooks(this.id, this.token).slack.post({
       query: new URLSearchParams({ wait: true }),
       auth: false,
       body,
@@ -258,8 +258,8 @@ class Webhook {
       avatar = await DataResolver.resolveImage(avatar);
     }
     channel &&= channel.id ?? channel;
-    const data = await this.client.rest.patch(Routes.webhook(this.id, channel ? undefined : this.token), {
-      body: { name, avatar, channel_id: channel },
+    const data = await this.client.api.webhooks(this.id, channel ? undefined : this.token).patch({
+      data: { name, avatar, channel_id: channel },
       reason,
       auth: !this.token || Boolean(channel),
     });
@@ -288,13 +288,13 @@ class Webhook {
   async fetchMessage(message, { cache = true, threadId } = {}) {
     if (!this.token) throw new Error('WEBHOOK_TOKEN_UNAVAILABLE');
 
-    const data = await this.client.rest.get(Routes.webhookMessage(this.id, this.token, message), {
+    const data = await this.client.api.webhooks(this.id, this.token).messages(message).get({
       query: threadId
         ? new URLSearchParams({
-            thread_id: threadId,
-          })
+          thread_id: threadId,
+        })
         : undefined,
-      auth: false,
+      auth: false
     });
     return this.client.channels?.cache.get(data.channel_id)?.messages._add(data, cache) ?? data;
   }
@@ -316,19 +316,9 @@ class Webhook {
 
     const { body, files } = await messagePayload.resolveBody().resolveFiles();
 
-    const d = await this.client.rest.patch(
-      Routes.webhookMessage(this.id, this.token, typeof message === 'string' ? message : message.id),
-      {
-        body,
-        files,
-        query: messagePayload.options.threadId
-          ? new URLSearchParams({
-              thread_id: messagePayload.options.threadId,
-            })
-          : undefined,
-        auth: false,
-      },
-    );
+    const d = await this.client.api.webhooks(this.id, this.token).messages(typeof message === 'string' ? message : message.id).patch({
+      body, files, query: messagePayload.options.threadId ? new URLSearchParams({ thread_id: messagePayload.options.threadId }) : undefined, auth: false
+    });
 
     const messageManager = this.client.channels?.cache.get(d.channel_id)?.messages;
     if (!messageManager) return d;
@@ -347,7 +337,7 @@ class Webhook {
    * @returns {Promise<void>}
    */
   async delete(reason) {
-    await this.client.rest.delete(Routes.webhook(this.id, this.token), { reason, auth: !this.token });
+    await this.client.api.webhooks(this.id, this.token).delete({ reason, auth: !this.token });
   }
 
   /**
@@ -359,17 +349,14 @@ class Webhook {
   async deleteMessage(message, threadId) {
     if (!this.token) throw new Error('WEBHOOK_TOKEN_UNAVAILABLE');
 
-    await this.client.rest.delete(
-      Routes.webhookMessage(this.id, this.token, typeof message === 'string' ? message : message.id),
-      {
-        query: threadId
-          ? new URLSearchParams({
-              thread_id: threadId,
-            })
-          : undefined,
-        auth: false,
-      },
-    );
+    await this.client.api.webhooks(this.id, this.token).messages(typeof message === 'string' ? message : message.id ).delete({
+      query: threadId
+        ? new URLSearchParams({
+            thread_id: threadId,
+          })
+        : undefined,
+      auth: false,
+    })
   }
 
   /**

@@ -172,7 +172,7 @@ class TextBasedChannel {
     }
 
     const { body, files } = await messagePayload.resolveFiles();
-    const d = await this.client.rest.post(Routes.channelMessages(this.id), { body, files });
+    const d = await this.client.api.channels[this.id].messages.post({ body, files });
 
     return this.messages.cache.get(d.id) ?? this.messages._add(d);
   }
@@ -185,7 +185,7 @@ class TextBasedChannel {
    * channel.sendTyping();
    */
   async sendTyping() {
-    await this.client.rest.post(Routes.channelTyping(this.id));
+    await this.client.api.channels(this.id).typing.post();
   }
 
   /**
@@ -298,7 +298,7 @@ class TextBasedChannel {
       }
       if (messageIds.length === 0) return new Collection();
       if (messageIds.length === 1) {
-        await this.client.rest.delete(Routes.channelMessage(this.id, messageIds[0]));
+        await this.client.api.channels(this.id).messages(messageIds[0]).delete();
         const message = this.client.actions.MessageDelete.getMessage(
           {
             message_id: messageIds[0],
@@ -307,7 +307,7 @@ class TextBasedChannel {
         );
         return message ? new Collection([[message.id, message]]) : new Collection();
       }
-      await this.client.rest.post(Routes.channelBulkDelete(this.id), { body: { messages: messageIds } });
+      await this.client.api.channels(this.id).messages['bulk-delete'].post({ body: { messages: messageIds } });
       return messageIds.reduce(
         (col, id) =>
           col.set(

@@ -45,10 +45,7 @@ class ReactionUserManager extends CachedManager {
     if (after) {
       query.set('after', after);
     }
-    const data = await this.client.rest.get(
-      Routes.channelMessageReaction(message.channelId, message.id, this.reaction.emoji.identifier),
-      { query },
-    );
+    const data = await this.client.api.channels(message.channelId).messages(message.id).reactions(this.reaction.emoji.identifier).get({ query });
     const users = new Collection();
     for (const rawUser of data) {
       const user = this.client.users._add(rawUser);
@@ -67,11 +64,10 @@ class ReactionUserManager extends CachedManager {
     const userId = this.client.users.resolveId(user);
     if (!userId) throw new Error('REACTION_RESOLVE_USER');
     const message = this.reaction.message;
-    const route =
-      userId === this.client.user.id
-        ? Routes.channelMessageOwnReaction(message.channelId, message.id, this.reaction.emoji.identifier)
-        : Routes.channelMessageUserReaction(message.channelId, message.id, this.reaction.emoji.identifier, userId);
-    await this.client.rest.delete(route);
+    await this.client.api.channels[message.channelId]
+      .messages[message.id]
+      .reactions[this.reaction.emoji.identifier][userId === this.client.user.id ? '@me' : userId]
+      .delete();
     return this.reaction;
   }
 }

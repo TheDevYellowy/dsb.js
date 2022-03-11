@@ -158,9 +158,7 @@ class GuildTemplate extends Base {
    * @returns {Promise<GuildTemplate>}
    */
   async edit({ name, description } = {}) {
-    const data = await this.client.rest.patch(Routes.guildTemplate(this.guildId, this.code), {
-      body: { name, description },
-    });
+    const data = await this.client.api.guilds(this.guildId).templates(this.code).patch({ body: { name, description } });
     return this._patch(data);
   }
 
@@ -169,7 +167,7 @@ class GuildTemplate extends Base {
    * @returns {Promise<GuildTemplate>}
    */
   async delete() {
-    await this.client.rest.delete(Routes.guildTemplate(this.guildId, this.code));
+    await this.client.api.guilds(this.guildId).templates(this.code).delete();
     return this;
   }
 
@@ -178,7 +176,7 @@ class GuildTemplate extends Base {
    * @returns {Promise<GuildTemplate>}
    */
   async sync() {
-    const data = await this.client.rest.put(Routes.guildTemplate(this.guildId, this.code));
+    const data = await this.client.api.guilds(this.guildId).templates(this.code).put();
     return this._patch(data);
   }
 

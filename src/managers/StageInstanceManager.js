@@ -60,7 +60,7 @@ class StageInstanceManager extends CachedManager {
     if (typeof options !== 'object') throw new TypeError('INVALID_TYPE', 'options', 'object', true);
     let { topic, privacyLevel } = options;
 
-    const data = await this.client.rest.post(Routes.stageInstances(), {
+    const data = await this.client.api['stage-instances'].post({
       body: {
         channel_id: channelId,
         topic,
@@ -91,7 +91,7 @@ class StageInstanceManager extends CachedManager {
       if (existing) return existing;
     }
 
-    const data = await this.client.rest.get(Routes.stageInstance(channelId));
+    const data = await this.client.api('stage-instances', channelId).get();
     return this._add(data, cache);
   }
 
@@ -120,12 +120,12 @@ class StageInstanceManager extends CachedManager {
 
     let { topic, privacyLevel } = options;
 
-    const data = await this.client.rest.patch(Routes.stageInstance(channelId), {
+    const data = await this.client.api('stage-instances', channelId).patch({
       body: {
         topic,
         privacy_level: privacyLevel,
       },
-    });
+    })
 
     if (this.cache.has(data.id)) {
       const clone = this.cache.get(data.id)._clone();
@@ -145,7 +145,7 @@ class StageInstanceManager extends CachedManager {
     const channelId = this.guild.channels.resolveId(channel);
     if (!channelId) throw new Error('STAGE_CHANNEL_RESOLVE');
 
-    await this.client.rest.delete(Routes.stageInstance(channelId));
+    await this.client.api('stage-instances', channelId).delete();
   }
 }
 

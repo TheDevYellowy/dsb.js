@@ -99,7 +99,7 @@ class ClientApplication extends Application {
    * @returns {Promise<ClientApplication>}
    */
   async fetch() {
-    const app = await this.client.rest.get(Routes.oauth2CurrentApplication());
+    const app = await this.client.api.oauth2.applications('@me').get();
     this._patch(app);
     return this;
   }

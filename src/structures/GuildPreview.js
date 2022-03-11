@@ -166,7 +166,7 @@ class GuildPreview extends Base {
    * @returns {Promise<GuildPreview>}
    */
   async fetch() {
-    const data = await this.client.rest.get(Routes.guildPreview(this.id));
+    const data = await this.client.api.guilds(this.id).preview.get();
     this._patch(data);
     return this;
   }

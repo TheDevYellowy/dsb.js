@@ -153,7 +153,7 @@ class GuildChannelManager extends CachedManager {
       );
     }
 
-    const data = await this.client.rest.post(Routes.guildChannels(this.guild.id), {
+    const data = await this.client.api.guilds(this.guild.id).channels.post({
       body: {
         name,
         topic,
@@ -193,7 +193,7 @@ class GuildChannelManager extends CachedManager {
     if (typeof avatar === 'string' && !avatar.startsWith('data:')) {
       avatar = await DataResolver.resolveImage(avatar);
     }
-    const data = await this.client.rest.post(Routes.channelWebhooks(id), {
+    const data = await this.client.api.channels(id).webhooks.post({
       body: {
         name,
         avatar,
@@ -261,7 +261,7 @@ class GuildChannelManager extends CachedManager {
       }
     }
 
-    const newData = await this.client.rest.patch(Routes.channel(channel.id), {
+    const newData = await this.client.api.channels(channel.id).patch({
       body: {
         name: (data.name ?? channel.name).trim(),
         type: data.type,
@@ -277,7 +277,7 @@ class GuildChannelManager extends CachedManager {
         permission_overwrites,
       },
       reason,
-    });
+    })
 
     return this.client.actions.ChannelUpdate.handle(newData).updated;
   }
@@ -337,13 +337,13 @@ class GuildChannelManager extends CachedManager {
     }
 
     if (id) {
-      const data = await this.client.rest.get(Routes.channel(id));
+      const data = await this.client.api.channels(id).get();
       // Since this is the guild manager, throw if on a different guild
       if (this.guild.id !== data.guild_id) throw new Error('GUILD_CHANNEL_UNOWNED');
       return this.client.channels._add(data, this.guild, { cache });
     }
 
-    const data = await this.client.rest.get(Routes.guildChannels(this.guild.id));
+    const data = await this.client.api.guilds(this.guild.id).channels.get();
     const channels = new Collection();
     for (const channel of data) channels.set(channel.id, this.client.channels._add(channel, this.guild, { cache }));
     return channels;
@@ -362,7 +362,7 @@ class GuildChannelManager extends CachedManager {
   async fetchWebhooks(channel) {
     const id = this.resolveId(channel);
     if (!id) throw new TypeError('INVALID_TYPE', 'channel', 'GuildChannelResolvable');
-    const data = await this.client.rest.get(Routes.channelWebhooks(id));
+    const data = await this.client.api.channels(id).webhooks.get();
     return data.reduce((hooks, hook) => hooks.set(hook.id, new Webhook(this.client, hook)), new Collection());
   }
 
@@ -400,7 +400,7 @@ class GuildChannelManager extends CachedManager {
       parent_id: typeof r.parent !== 'undefined' ? this.channels.resolveId(r.parent) : undefined,
     }));
 
-    await this.client.rest.patch(Routes.guildChannels(this.guild.id), { body: channelPositions });
+    await this.client.api.guilds(this.guild.id).channels.post({ body: channelPositions });
     return this.client.actions.GuildChannelsPositionUpdate.handle({
       guild_id: this.guild.id,
       channels: channelPositions,
@@ -418,7 +418,7 @@ class GuildChannelManager extends CachedManager {
    *   .catch(console.error);
    */
   async fetchActiveThreads(cache = true) {
-    const raw = await this.client.rest.get(Routes.guildActiveThreads(this.guild.id));
+    const raw = await this.client.api.guilds(this.guild.id).threads.active.get();
     return ThreadManager._mapThreads(raw, this.client, { guild: this.guild, cache });
   }
 
@@ -436,7 +436,7 @@ class GuildChannelManager extends CachedManager {
   async delete(channel, reason) {
     const id = this.resolveId(channel);
     if (!id) throw new TypeError('INVALID_TYPE', 'channel', 'GuildChannelResolvable');
-    await this.client.rest.delete(Routes.channel(id), { reason });
+    await this.client.api.channels(id).delete({ reason });
   }
 }
 

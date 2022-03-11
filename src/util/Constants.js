@@ -199,3 +199,68 @@ exports.Events = {
   GUILD_SCHEDULED_EVENT_USER_ADD: 'guildScheduledEventUserAdd',
   GUILD_SCHEDULED_EVENT_USER_REMOVE: 'guildScheduledEventUserRemove',
 };
+
+function makeImageUrl(root, { format = 'webp', size } = {}) {
+  if (!['undefined', 'number'].includes(typeof size)) throw new TypeError('INVALID_TYPE', 'size', 'number');
+  if (format && !AllowedImageFormats.includes(format)) throw new Error('IMAGE_FORMAT', format);
+  if (size && !AllowedImageSizes.includes(size)) throw new RangeError('IMAGE_SIZE', size);
+  return `${root}.${format}${size ? `?size=${size}` : ''}`;
+}
+
+/**
+ * Options for Image URLs.
+ * @typedef {StaticImageURLOptions} ImageURLOptions
+ * @property {boolean} [dynamic=false] If true, the format will dynamically change to `gif` for animated avatars.
+ */
+
+/**
+ * Options for static Image URLs.
+ * @typedef {Object} StaticImageURLOptions
+ * @property {string} [format='webp'] One of `webp`, `png`, `jpg`, `jpeg`.
+ * @property {number} [size] One of `16`, `32`, `56`, `64`, `96`, `128`, `256`, `300`, `512`, `600`, `1024`, `2048`,
+ * `4096`
+ */
+
+// https://discord.com/developers/docs/reference#image-formatting-cdn-endpoints
+exports.Endpoints = {
+  CDN(root) {
+    return {
+      Emoji: (emojiId, format = 'webp') => `${root}/emojis/${emojiId}.${format}`,
+      Asset: name => `${root}/assets/${name}`,
+      DefaultAvatar: discriminator => `${root}/embed/avatars/${discriminator}.png`,
+      Avatar: (userId, hash, format, size, dynamic = false) => {
+        if (dynamic && hash.startsWith('a_')) format = 'gif';
+        return makeImageUrl(`${root}/avatars/${userId}/${hash}`, { format, size });
+      },
+      GuildMemberAvatar: (guildId, memberId, hash, format = 'webp', size, dynamic = false) => {
+        if (dynamic && hash.startsWith('a_')) format = 'gif';
+        return makeImageUrl(`${root}/guilds/${guildId}/users/${memberId}/avatars/${hash}`, { format, size });
+      },
+      Banner: (id, hash, format, size, dynamic = false) => {
+        if (dynamic && hash.startsWith('a_')) format = 'gif';
+        return makeImageUrl(`${root}/banners/${id}/${hash}`, { format, size });
+      },
+      Icon: (guildId, hash, format, size, dynamic = false) => {
+        if (dynamic && hash.startsWith('a_')) format = 'gif';
+        return makeImageUrl(`${root}/icons/${guildId}/${hash}`, { format, size });
+      },
+      AppIcon: (appId, hash, options) => makeImageUrl(`${root}/app-icons/${appId}/${hash}`, options),
+      AppAsset: (appId, hash, options) => makeImageUrl(`${root}/app-assets/${appId}/${hash}`, options),
+      StickerPackBanner: (bannerId, format, size) =>
+        makeImageUrl(`${root}/app-assets/710982414301790216/store/${bannerId}`, { size, format }),
+      GDMIcon: (channelId, hash, format, size) =>
+        makeImageUrl(`${root}/channel-icons/${channelId}/${hash}`, { size, format }),
+      Splash: (guildId, hash, format, size) => makeImageUrl(`${root}/splashes/${guildId}/${hash}`, { size, format }),
+      DiscoverySplash: (guildId, hash, format, size) =>
+        makeImageUrl(`${root}/discovery-splashes/${guildId}/${hash}`, { size, format }),
+      TeamIcon: (teamId, hash, options) => makeImageUrl(`${root}/team-icons/${teamId}/${hash}`, options),
+      Sticker: (stickerId, stickerFormat) =>
+        `${root}/stickers/${stickerId}.${stickerFormat === 'LOTTIE' ? 'json' : 'png'}`,
+      RoleIcon: (roleId, hash, format = 'webp', size) =>
+        makeImageUrl(`${root}/role-icons/${roleId}/${hash}`, { size, format }),
+    };
+  },
+  invite: (root, code, eventId) => (eventId ? `${root}/${code}?event=${eventId}` : `${root}/${code}`),
+  scheduledEvent: (root, guildId, eventId) => `${root}/${guildId}/${eventId}`,
+  botGateway: '/gateway/bot',
+};
