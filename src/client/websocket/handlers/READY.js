@@ -16,7 +16,7 @@ module.exports = (client, { d: data }, shard) => {
     client.users.cache.set(client.user.id, client.user);
   }
 
-  client.user.setAfk(true);
+  client.user.setAFK(true);
 
   for (const guild of data.guilds) {
     guild.shardId = shard.id;
