@@ -88,7 +88,9 @@ class UserManager extends CachedManager {
     }
 
     const data = await this.client.api.users(id).get();
-    return this._add(data, cache);
+    const userObject = this._add(data, cache);
+    await userObject.getProfile();
+    return userObject;
   }
 
   /**

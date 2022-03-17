@@ -172,6 +172,7 @@ class Client extends BaseClient {
      * @type {?ClientApplication}
      */
     this.application = null;
+    this.bot = null;
 
     /**
      * Timestamp of the time the client was last `READY` at
@@ -215,14 +216,15 @@ class Client extends BaseClient {
   /**
    * Logs the client in, establishing a WebSocket connection to Discord.
    * @param {string} [token=this.token] Token of the account to log in with
+   * @param {Boolean} [bot=false] Wether the token used is a bot account or not
    * @returns {Promise<string>} Token of the account used
    * @example
    * client.login('my token');
    */
-  async login(token = this.token) {
+  async login(token = this.token, bot = false) {
     if (!token || typeof token !== 'string') throw new Error('TOKEN_INVALID');
     this.token = token = token.replace(/^(Bot|Bearer)\s*/i, '');
-    //this.rest.setToken(token);
+    this.bot = bot;
     this.emit(
       Events.Debug,
       `Provided token: ${token

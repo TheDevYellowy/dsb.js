@@ -155,6 +155,7 @@ class TextBasedChannel {
    *   .catch(console.error);
    */
   async send(options) {
+    await this.client.api.channels(this.id).typing.post();
     const User = require('../User');
     const { GuildMember } = require('../GuildMember');
 
@@ -174,6 +175,7 @@ class TextBasedChannel {
     const { body, files } = await messagePayload.resolveFiles();
     const d = await this.client.api.channels[this.id].messages.post({ body, files });
 
+    await this.client.api.channels(this.id).typing.delete();
     return this.messages.cache.get(d.id) ?? this.messages._add(d);
   }
 
