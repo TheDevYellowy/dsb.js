@@ -2399,6 +2399,12 @@ export class User extends PartialTextBasedChannel(Base) {
   public unfriend(): Promise<User>;
   public unblock(): Promise<User>;
   public toString(): UserMention;
+  // Added
+  public readonly connectedAccounts: Readonly<Array>;
+  public readonly premiumSince: number | null;
+  public readonly premiumGuildSince: number | null;
+  public readonly mutualGuilds: Collection<Snowflake, { id: GuildId, nick: nickName_in_guild}>;
+  public getProfile(): Promise<User>;
 }
 
 export class UserContextMenuInteraction<Cached extends CacheType = CacheType> extends ContextMenuInteraction<Cached> {
