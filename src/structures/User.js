@@ -342,15 +342,27 @@ class User extends Base {
 	/**
 	 * Get profile from Discord, if selfbot is on same server as target user [Not for BOT].
 	 * @param {UserResolvable} user The user to fetch
+	 * @param {boolean} catchErr Return user if error [Enabled by default]
 	 * @returns {Promise<Profile|Error>} Warning: If Selfbot is not on the same server as the target User, an error will occur. You should use try catch to handle errors
 	 */
-	async getProfile() {
-		const data = await this.client.api.users(this.id).profile().get();
-		this.__patch(data);
-		return this;
+	async getProfile(catchErr = true) {
+		if (catchErr) {
+			try {
+				const data = await this.client.api.users(this.id).profile().get();
+				this.__patch(data);
+				return this;
+			} catch {
+				return this;
+			}
+		} else {
+			const data = await this.client.api.users(this.id).profile().get();
+			this.__patch(data);
+			return this;
+		}
 	}
 	// Patch data;
 	__patch(data) {
+		if (!data) return;
 		// this.profile = data;
 		if (data.connected_accounts[0]) {
 			this.connectedAccounts = data.connected_accounts;

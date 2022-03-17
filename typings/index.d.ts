@@ -2404,7 +2404,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public readonly premiumSince: number | null;
   public readonly premiumGuildSince: number | null;
   public readonly mutualGuilds: Collection<Snowflake, { id: GuildId, nick: nickName_in_guild}>;
-  public getProfile(): Promise<User>;
+  public getProfile(catchErr?: boolean): Promise<User>;
 }
 
 export class UserContextMenuInteraction<Cached extends CacheType = CacheType> extends ContextMenuInteraction<Cached> {
