@@ -144,7 +144,9 @@ const Messages = {
   INVALID_USER_METHOD: `User accounts cannot use this method`,
 };
 
-Messages.AuthenticaRDING_REQUIRED;
+Messages.AuthenticationFailed = Messages.TOKEN_INVALID;
+Messages.InvalidShard = Messages.SHARDING_INVALID;
+Messages.ShardingRequired = Messages.SHARDING_REQUIRED;
 Messages.InvalidIntents = Messages.INVALID_INTENTS;
 Messages.DisallowedIntents = Messages.DISALLOWED_INTENTS;
 
