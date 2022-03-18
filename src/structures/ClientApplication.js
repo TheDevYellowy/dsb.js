@@ -5,6 +5,7 @@ const Team = require('./Team');
 const Application = require('./interfaces/Application');
 const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
 const ApplicationFlagsBitField = require('../util/ApplicationFlagsBitField');
+const { Error } = require('../errors/DJSError');
 
 /**
  * Represents a Client OAuth2 Application.
@@ -99,10 +100,12 @@ class ClientApplication extends Application {
    * @returns {Promise<ClientApplication>}
    */
   async fetch() {
-    const app = await this.client.api.oauth2.applications('@me').get();
-    this._patch(app);
-    return this;
-  }
+		// Fix DiscordAPIError: Only bots can use this endpoint
+    if (!this.client.user.bot) throw new Error('INVALID_SELFBOT_METHOD');
+		const app = await this.client.api.oauth2.applications('@me').get();
+		this._patch(app);
+		return this;
+	}
 }
 
 module.exports = ClientApplication;
