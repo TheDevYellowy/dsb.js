@@ -321,7 +321,7 @@ class ThreadChannel extends Channel {
         autoArchiveDuration = 4320;
       }
     }
-    const newData = await this.client.rest.patch(Routes.channel(this.id), {
+    const newData = await this.client.api.channels(this.id).patch({
       body: {
         name: (data.name ?? this.name).trim(),
         archived: data.archived,

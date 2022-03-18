@@ -122,7 +122,7 @@ class GuildMemberRoleManager extends DataManager {
         throw new TypeError('INVALID_TYPE', 'roles', 'Role, Snowflake or Array or Collection of Roles or Snowflakes');
       }
 
-      await this.client.rest.put(Routes.guildMemberRole(this.guild.id, this.member.id, roleOrRoles), { reason });
+      await this.client.api.guilds[this.guild.id].members[this.member.id].roles[roleOrRoles].put({ reason });
 
       const clone = this.member._clone();
       clone._roles = [...this.cache.keys(), roleOrRoles];
@@ -153,7 +153,7 @@ class GuildMemberRoleManager extends DataManager {
         throw new TypeError('INVALID_TYPE', 'roles', 'Role, Snowflake or Array or Collection of Roles or Snowflakes');
       }
 
-      await this.client.rest.delete(Routes.guildMemberRole(this.guild.id, this.member.id, roleOrRoles), { reason });
+      await this.client.api.guilds[this.guild.id].members[this.member.id].roles[roleOrRoles].delete({ reason });
 
       const clone = this.member._clone();
       const newRoles = this.cache.filter(role => role.id !== roleOrRoles);

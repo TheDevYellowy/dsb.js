@@ -540,6 +540,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   private _eval(script: string): unknown;
 
   public application: If<Ready, ClientApplication>;
+  public bot: Boolean;
   public channels: ChannelManager;
   public readonly emojis: BaseGuildEmojiManager;
   public guilds: GuildManager;
@@ -549,6 +550,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public sweepers: Sweepers;
   public shard: ShardClientUtil | null;
   public token: If<Ready, string, string | null>;
+  public session_id: String;
   public uptime: If<Ready, number>;
   public user: If<Ready, ClientUser>;
   public users: UserManager;
@@ -565,7 +567,7 @@ export class Client<Ready extends boolean = boolean> extends BaseClient {
   public fetchPremiumStickerPacks(): Promise<Collection<Snowflake, StickerPack>>;
   public fetchWebhook(id: Snowflake, token?: string): Promise<Webhook>;
   public fetchGuildWidget(guild: GuildResolvable): Promise<Widget>;
-  public login(token?: string): Promise<string>;
+  public login(token?: string, bot?: Boolean): Promise<string>;
   public isReady(): this is Client<true>;
   /** @deprecated Use {@link Sweepers#sweepMessages} instead */
   public sweepMessages(lifetime?: number): number;
@@ -2386,6 +2388,10 @@ export class User extends PartialTextBasedChannel(Base) {
   public username: string;
   public readonly friended: Boolean;
   public readonly blocked: Boolean;
+  public readonly connectedAccounts: Readonly<Array>;
+  public readonly premiumSince: number | null;
+  public readonly premiumGuildSince: number | null;
+  public readonly mutualGuilds: Collection<Snowflake, { id: GuildId, nick: nickName_in_guild}>;
   public avatarURL(options?: ImageURLOptions): string | null;
   public bannerURL(options?: ImageURLOptions): string | null;
   public createDM(force?: boolean): Promise<DMChannel>;
@@ -2398,6 +2404,7 @@ export class User extends PartialTextBasedChannel(Base) {
   public block(): Promise<User>;
   public unfriend(): Promise<User>;
   public unblock(): Promise<User>;
+  public getProfile(): Promise<User>;
   public toString(): UserMention;
 }
 

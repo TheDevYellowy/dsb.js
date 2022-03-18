@@ -41,19 +41,9 @@ class ApplicationCommandManager extends CachedManager {
    * @private
    */
   commandPath({ id, guildId } = {}) {
-    if (this.guild ?? guildId) {
-      if (id) {
-        return Routes.applicationGuildCommand(this.client.application.id, this.guild?.id ?? guildId, id);
-      }
-
-      return Routes.applicationGuildCommands(this.client.application.id, this.guild?.id ?? guildId);
-    }
-
-    if (id) {
-      return Routes.applicationCommand(this.client.application.id, id);
-    }
-
-    return Routes.applicationCommands(this.client.application.id);
+    let path = this.client.api.applications(this.client.application.id);
+    if(this.guild ?? guildId) path = path.guilds(this.guild?.id ?? guildId);
+    return id ? path.commands(id) : path.commands;
   }
 
   /**
@@ -100,11 +90,11 @@ class ApplicationCommandManager extends CachedManager {
         const existing = this.cache.get(id);
         if (existing) return existing;
       }
-      const command = await this.client.rest.get(this.commandPath({ id, guildId }));
+      const command = await this.commandPath({ id, guildId }).get();
       return this._add(command, cache);
     }
 
-    const data = await this.client.rest.get(this.commandPath({ guildId }));
+    const data = await this.commandPath({ guildId }).get();
     return data.reduce((coll, command) => coll.set(command.id, this._add(command, cache, guildId)), new Collection());
   }
 
@@ -124,8 +114,8 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async create(command, guildId) {
-    const data = await this.client.rest.post(this.commandPath({ guildId }), {
-      body: this.constructor.transformCommand(command),
+    const data = await this.commandPath({ guildId }).post({
+      data: this.constructor.transformCommand(command),
     });
     return this._add(data, true, guildId);
   }
@@ -153,8 +143,8 @@ class ApplicationCommandManager extends CachedManager {
    *   .catch(console.error);
    */
   async set(commands, guildId) {
-    const data = await this.client.rest.put(this.commandPath({ guildId }), {
-      body: commands.map(c => this.constructor.transformCommand(c)),
+    const data = await this.commandPath({ guildId }).put({
+      data: commands.map(c => this.constructor.transformCommand(c)),
     });
     return data.reduce((coll, command) => coll.set(command.id, this._add(command, true, guildId)), new Collection());
   }
@@ -178,7 +168,7 @@ class ApplicationCommandManager extends CachedManager {
     const id = this.resolveId(command);
     if (!id) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
 
-    const patched = await this.client.rest.patch(this.commandPath({ id, guildId }), {
+    const patched = await this.commandPath({ id, guildId }).patch({
       body: this.constructor.transformCommand(data),
     });
     return this._add(patched, true, guildId);
@@ -200,7 +190,7 @@ class ApplicationCommandManager extends CachedManager {
     const id = this.resolveId(command);
     if (!id) throw new TypeError('INVALID_TYPE', 'command', 'ApplicationCommandResolvable');
 
-    await this.client.rest.delete(this.commandPath({ id, guildId }));
+    await this.commandPath({ id, guildId }).delete();
 
     const cached = this.cache.get(id);
     this.cache.delete(id);

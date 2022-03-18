@@ -1,9 +1,11 @@
 'use strict';
 
-const { DiscordSnowflake } = require('@sapphire/snowflake');
 const Base = require('./Base');
-const TextBasedChannel = require('./interfaces/TextBasedChannel');
+const { Error } = require('../errors/DJSError');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
 const UserFlagsBitField = require('../util/UserFlagsBitField');
+const { default: Collection } = require('@discordjs/collection');
+const TextBasedChannel = require('./interfaces/TextBasedChannel');
 
 /**
  * Represents a user on Discord.
@@ -30,7 +32,11 @@ class User extends Base {
 
     this.blocked = client.blocked.cache.has(this.id);
 
-    
+    // Code written by https://github.com/aiko-chan-ai
+    this.connectedAccounds = [];
+    this.premiumSince = null;
+    this.premiumGuildSince = null;
+    this.mutualGuilds = new Collection();
 
     this._patch(data);
   }
@@ -117,6 +123,40 @@ class User extends Base {
     }
   }
 
+  // Code written by https://github.com/aiko-chan-ai
+  _ProfilePatch(data) {
+    if(!data) return;
+
+    if(data.connected_accounts.length > 0) this.connectedAccounds = data.connected_accounts;
+
+    if('premium_since' in data) {
+      const date = new Date(data.premium_since);
+      this.premiumSince = date.getTime();
+    }
+
+    if('premium_guild_since' in data) {
+      const date = new Date(data.premium_guild_since);
+      this.premiumGuildSince = date.getTime();
+    }
+
+    this.mutualGuilds = new Collection(data.mutual_guilds.map((obj) => [obj.id, obj]));
+  }
+
+  /**
+   * Get profile from Discord, if client is in a server with the target.
+   * <br>Code written by https://github.com/aiko-chan-ai
+   */
+  async getProfile() {
+    if(this.client.bot) throw new Error('INVALID_BOT_METHOD');
+    try {
+      const data = await this.client.api.users(this.id).profile.get();
+      this._ProfilePatch(data);
+      return this
+    } catch (e) {
+      throw e
+    }
+  }
+
   /**
    * Friends the user
    * @returns {Promise<User>} the user object
@@ -195,6 +235,16 @@ class User extends Base {
    */
   avatarURL(options = {}) {
     return this.avatar && this.client.rest.cdn.avatar(this.id, this.avatar, options);
+  }
+
+  /**
+   * If the user is a bot then it'll return the slash commands else return null
+   * @readonly
+   */
+  get slashCommands() {
+    if(this.bot) {
+      return this.client.api.applications(this.id).commands.get();
+    } else return null;
   }
 
   /**

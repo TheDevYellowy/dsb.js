@@ -128,7 +128,7 @@ class ThreadManager extends CachedManager {
       }
     }
 
-    const data = await this.client.rest.post(Routes.threads(this.channel.id, startMessageId), {
+    const data = await this.client.api.channels(this.channel.id).messages(startMessageId).threads.post({
       body: {
         name,
         auto_archive_duration: autoArchiveDuration,
@@ -205,9 +205,9 @@ class ThreadManager extends CachedManager {
    * @returns {Promise<FetchedThreads>}
    */
   async fetchArchived({ type = 'public', fetchAll = false, before, limit } = {}, cache = true) {
-    let path = Routes.channelThreads(this.channel.id, type);
+    let path = this.client.api.channels(this.channel.id);
     if (type === 'private' && !fetchAll) {
-      path = Routes.channelJoinedArchivedThreads(this.channel.id);
+      path = path.users('@me');
     }
     let timestamp;
     let id;
@@ -235,7 +235,7 @@ class ThreadManager extends CachedManager {
     if (limit) {
       query.set('limit', limit);
     }
-    const raw = await this.client.rest.get(path, { query });
+    const raw = await path.threads.archived(type).get({ query });
     return this.constructor._mapThreads(raw, this.client, { parent: this.channel, cache });
   }
 
@@ -245,7 +245,7 @@ class ThreadManager extends CachedManager {
    * @returns {Promise<FetchedThreads>}
    */
   async fetchActive(cache = true) {
-    const raw = await this.client.rest.get(Routes.guildActiveThreads(this.channel.guild.id));
+    const raw = await this.client.api.guilds(this.channel.guild.id).threads.active.get();
     return this.constructor._mapThreads(raw, this.client, { parent: this.channel, cache });
   }
 

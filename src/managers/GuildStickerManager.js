@@ -64,7 +64,7 @@ class GuildStickerManager extends CachedManager {
 
     const body = { name, tags, description: description ?? '' };
 
-    const sticker = await this.client.rest.post(Routes.guildStickers(this.guild.id), {
+    const sticker = await this.client.api.guilds(this.guild.id).stickers.post({
       appendToFormData: true,
       body,
       files: [file],
@@ -109,7 +109,7 @@ class GuildStickerManager extends CachedManager {
     const stickerId = this.resolveId(sticker);
     if (!stickerId) throw new TypeError('INVALID_TYPE', 'sticker', 'StickerResolvable');
 
-    const d = await this.client.rest.patch(Routes.guildSticker(this.guild.id, stickerId), {
+    const d = await this.client.api.guilds(this.guild.id).stickers(stickerId).patch({
       body: data,
       reason,
     });
@@ -133,7 +133,7 @@ class GuildStickerManager extends CachedManager {
     sticker = this.resolveId(sticker);
     if (!sticker) throw new TypeError('INVALID_TYPE', 'sticker', 'StickerResolvable');
 
-    await this.client.rest.delete(Routes.guildSticker(this.guild.id, sticker), { reason });
+    await this.client.api.guilds(this.guild.id).stickers(sticker).delete({ reason });
   }
 
   /**
@@ -158,11 +158,11 @@ class GuildStickerManager extends CachedManager {
         const existing = this.cache.get(id);
         if (existing) return existing;
       }
-      const sticker = await this.client.rest.get(Routes.guildSticker(this.guild.id, id));
+      const sticker = await this.client.api.guilds(this.guild.id).stickers(id).get();
       return this._add(sticker, cache);
     }
 
-    const data = await this.client.rest.get(Routes.guildStickers(this.guild.id));
+    const data = await this.client.api.guilds(this.guild.id).stickers.get();
     return new Collection(data.map(sticker => [sticker.id, this._add(sticker, cache)]));
   }
 
@@ -174,7 +174,7 @@ class GuildStickerManager extends CachedManager {
   async fetchUser(sticker) {
     sticker = this.resolve(sticker);
     if (!sticker) throw new TypeError('INVALID_TYPE', 'sticker', 'StickerResolvable');
-    const data = await this.client.rest.get(Routes.guildSticker(this.guildId, sticker.id));
+    const data = await this.client.api.guilds(this.guild.id).stickers(sticker.id).get();
     sticker._patch(data);
     return sticker.user;
   }

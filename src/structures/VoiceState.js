@@ -222,12 +222,12 @@ class VoiceState extends Base {
 
     if (this.client.user.id !== this.id) throw new Error('VOICE_STATE_NOT_OWN');
 
-    await this.client.rest.patch(Routes.guildVoiceState(this.guild.id), {
+    await this.client.api.guilds(this.guild.id, 'voice-states', '@me').patch({
       body: {
         channel_id: this.channelId,
         request_to_speak_timestamp: request ? new Date().toISOString() : null,
-      },
-    });
+      }
+    })
   }
 
   /**
@@ -254,11 +254,11 @@ class VoiceState extends Base {
 
     const target = this.client.user.id === this.id ? '@me' : this.id;
 
-    await this.client.rest.patch(Routes.guildVoiceState(this.guild.id, target), {
+    await this.client.api.guilds(this.guild.id, 'voice-states', target).patch({
       body: {
         channel_id: this.channelId,
         suppress: suppressed,
-      },
+      }
     });
   }
 

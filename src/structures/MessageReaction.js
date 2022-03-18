@@ -57,9 +57,7 @@ class MessageReaction {
    * @returns {Promise<MessageReaction>}
    */
   async remove() {
-    await this.client.rest.delete(
-      Routes.channelMessageReaction(this.message.channelId, this.message.id, this._emoji.identifier),
-    );
+    await this.client.api.channels(this.message.channelId).messages(this.message.id).reactions(this._emoji.identifier).delete()
     return this;
   }
 

@@ -92,7 +92,7 @@ class GuildScheduledEventManager extends CachedManager {
       entity_metadata = typeof entityMetadata === 'undefined' ? entityMetadata : null;
     }
 
-    const data = await this.client.rest.post(Routes.guildScheduledEvents(this.guild.id), {
+    const data = await this.client.api.guilds(this.guild.id, 'scheduled-events').post({
       body: {
         channel_id,
         name,
@@ -105,7 +105,7 @@ class GuildScheduledEventManager extends CachedManager {
         image: image && (await DataResolver.resolveImage(image)),
       },
       reason,
-    });
+    })
 
     return this._add(data);
   }
@@ -140,15 +140,15 @@ class GuildScheduledEventManager extends CachedManager {
         if (existing) return existing;
       }
 
-      const data = await this.client.rest.get(Routes.guildScheduledEvent(this.guild.id, id), {
+      const data = await this.client.api.guilds(this.guild.id, 'scheduled-events', id).get({
         query: new URLSearchParams({ with_user_count: options.withUserCount ?? true }),
-      });
+      })
       return this._add(data, options.cache);
     }
 
-    const data = await this.client.rest.get(Routes.guildScheduledEvents(this.guild.id), {
+    const data = await this.client.api.guilds(this.guild.id, 'scheduled-events').get({
       query: new URLSearchParams({ with_user_count: options.withUserCount ?? true }),
-    });
+    })
 
     return data.reduce(
       (coll, rawGuildScheduledEventData) =>
@@ -211,7 +211,7 @@ class GuildScheduledEventManager extends CachedManager {
       };
     }
 
-    const data = await this.client.rest.patch(Routes.guildScheduledEvent(this.guild.id, guildScheduledEventId), {
+    const data = await this.client.api.guilds(this.guild.id, 'scheduled-events', guildScheduledEventId).patch({
       body: {
         channel_id: typeof channel === 'undefined' ? channel : this.guild.channels.resolveId(channel),
         name,
@@ -225,7 +225,7 @@ class GuildScheduledEventManager extends CachedManager {
         entity_metadata,
       },
       reason,
-    });
+    })
 
     return this._add(data);
   }
@@ -239,7 +239,7 @@ class GuildScheduledEventManager extends CachedManager {
     const guildScheduledEventId = this.resolveId(guildScheduledEvent);
     if (!guildScheduledEventId) throw new Error('GUILD_SCHEDULED_EVENT_RESOLVE');
 
-    await this.client.rest.delete(Routes.guildScheduledEvent(this.guild.id, guildScheduledEventId));
+    await this.client.api.guilds(this.guild.id, 'scheduled-events', guildScheduledEventId).delete();
   }
 
   /**
@@ -290,7 +290,7 @@ class GuildScheduledEventManager extends CachedManager {
       query.set('after', after);
     }
 
-    const data = await this.client.rest.get(Routes.guildScheduledEventUsers(this.guild.id, guildScheduledEventId), {
+    const data = await this.client.api.guilds(this.guild.id, 'scheduled-events', guildScheduledEventId).users.get({
       query,
     });
 

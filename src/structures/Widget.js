@@ -78,7 +78,7 @@ class Widget extends Base {
    * @returns {Promise<Widget>}
    */
   async fetch() {
-    const data = await this.client.rest.get(Routes.guildWidgetJSON(this.id));
+    const data = await this.client.api.guilds(this.id, 'widget.json').get();
     this._patch(data);
     return this;
   }

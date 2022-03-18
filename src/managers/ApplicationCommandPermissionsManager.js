@@ -47,11 +47,7 @@ class ApplicationCommandPermissionsManager extends BaseManager {
    * @private
    */
   permissionsPath(guildId, commandId) {
-    if (commandId) {
-      return Routes.applicationCommandPermissions(this.client.application.id, guildId, commandId);
-    }
-
-    return Routes.guildApplicationCommandsPermissions(this.client.application.id, guildId);
+    return this.client.api.applications(this.client.application.id).guilds(guildId).commands(commandId).permissions;
   }
 
   /**
@@ -99,12 +95,19 @@ class ApplicationCommandPermissionsManager extends BaseManager {
   async fetch({ guild, command } = {}) {
     const { guildId, commandId } = this._validateOptions(guild, command);
     if (commandId) {
-      const data = await this.client.rest.get(this.permissionsPath(guildId, commandId));
-      return data.permissions;
+      const data = await this.permissionsPath(guildId, commandId).get();
+      return data.permissions.map(perm => this.constructor.transformPermissions(perm, true));
     }
 
-    const data = await this.client.rest.get(this.permissionsPath(guildId));
-    return data.reduce((coll, perm) => coll.set(perm.id, perm.permissions), new Collection());
+    const data = await this.permissionsPath(guildId).get();
+    return data.reduce(
+      (coll, perm) =>
+        coll.set(
+          perm.id,
+          perm.permissions.map(p => this.constructor.transformPermissions(p, true)),
+        ),
+      new Collection(),
+    );
   }
 
   /**
@@ -162,16 +165,35 @@ class ApplicationCommandPermissionsManager extends BaseManager {
       if (!Array.isArray(permissions)) {
         throw new TypeError('INVALID_TYPE', 'permissions', 'Array of ApplicationCommandPermissionData', true);
       }
-      const data = await this.client.rest.put(this.permissionsPath(guildId, commandId), { body: { permissions } });
-      return data.permissions;
+      const data = await this.permissionsPath(guildId, commandId).put({
+        data: { permissions: permissions.map(perm => this.constructor.transformPermissions(perm)) },
+      });
+      return data.permissions.map(perm => this.constructor.transformPermissions(perm, true));
     }
 
     if (!Array.isArray(fullPermissions)) {
       throw new TypeError('INVALID_TYPE', 'fullPermissions', 'Array of GuildApplicationCommandPermissionData', true);
     }
 
-    const data = await this.client.rest.put(this.permissionsPath(guildId), { body: fullPermissions });
-    return data.reduce((coll, perm) => coll.set(perm.id, perm.permissions), new Collection());
+    const APIPermissions = [];
+    for (const perm of fullPermissions) {
+      if (!Array.isArray(perm.permissions)) throw new TypeError('INVALID_ELEMENT', 'Array', 'fullPermissions', perm);
+      APIPermissions.push({
+        id: perm.id,
+        permissions: perm.permissions.map(p => this.constructor.transformPermissions(p)),
+      });
+    }
+    const data = await this.permissionsPath(guildId).put({
+      data: APIPermissions,
+    });
+    return data.reduce(
+      (coll, perm) =>
+        coll.set(
+          perm.id,
+          perm.permissions.map(p => this.constructor.transformPermissions(p, true)),
+        ),
+      new Collection(),
+    );
   }
 
   /**

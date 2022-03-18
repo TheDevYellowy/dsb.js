@@ -204,9 +204,9 @@ class GuildMemberManager extends CachedManager {
    * @returns {Promise<Collection<Snowflake, GuildMember>>}
    */
   async search({ query, limit, cache = true } = {}) {
-    const data = await this.client.rest.get(Routes.guildMembersSearch(this.guild.id), {
+    const data = await this.client.api.guilds(this.guild.id).members.search.get({
       query: new URLSearchParams({ query, limit }),
-    });
+    })
     return data.reduce((col, member) => col.set(member.user.id, this._add(member, cache)), new Collection());
   }
 
@@ -228,7 +228,7 @@ class GuildMemberManager extends CachedManager {
     if (after) {
       query.set('after', after);
     }
-    const data = await this.client.rest.get(Routes.guildMembers(this.guild.id), { query });
+    const data = await this.client.api.guilds(this.guild.id).members.get({ query });
     return data.reduce((col, member) => col.set(member.user.id, this._add(member, cache)), new Collection());
   }
 
@@ -278,15 +278,15 @@ class GuildMemberManager extends CachedManager {
         ? new Date(_data.communicationDisabledUntil).toISOString()
         : _data.communicationDisabledUntil;
 
-    let endpoint;
+    let endpoint = this.client.api.guilds(this.guild.id);
     if (id === this.client.user.id) {
       const keys = Object.keys(data);
-      if (keys.length === 1 && keys[0] === 'nick') endpoint = Routes.guildMember(this.guild.id);
-      else endpoint = Routes.guildMember(this.guild.id, id);
+      if (keys.length === 1 && keys[0] === 'nick') endpoint = endpoint.members('@me');
+      else endpoint = endpoint.members(id);
     } else {
-      endpoint = Routes.guildMember(this.guild.id, id);
+      endpoint = endpoint.members(id);
     }
-    const d = await this.client.rest.patch(endpoint, { body: _data, reason });
+    const d = await endpoint.patch({ data: _data, reason });
 
     const clone = this.cache.get(id)?._clone();
     clone?._patch(d);
@@ -343,11 +343,11 @@ class GuildMemberManager extends CachedManager {
       query.include_roles = dry ? resolvedRoles.join(',') : resolvedRoles;
     }
 
-    const endpoint = Routes.guildPrune(this.guild.id);
+    const endpoint = this.client.api.guilds(this.guild.id).prune;
 
     const { pruned } = await (dry
-      ? this.client.rest.get(endpoint, { query: new URLSearchParams(query), reason })
-      : this.client.rest.post(endpoint, { body: { ...query, compute_prune_count }, reason }));
+      ? endpoint.get({ query: new URLSearchParams(query), reason })
+      : endpoint.post({ body: { ...query, compute_prune_count }, reason }));
 
     return pruned;
   }
@@ -370,7 +370,7 @@ class GuildMemberManager extends CachedManager {
     const id = this.client.users.resolveId(user);
     if (!id) return Promise.reject(new TypeError('INVALID_TYPE', 'user', 'UserResolvable'));
 
-    await this.client.rest.delete(Routes.guildMember(this.guild.id, id), { reason });
+    await this.clinet.api.guilds(this.guild.id).members(id).delete({ reason });
 
     return this.resolve(user) ?? this.client.users.resolve(user) ?? id;
   }
@@ -414,7 +414,7 @@ class GuildMemberManager extends CachedManager {
       if (existing && !existing.partial) return existing;
     }
 
-    const data = await this.client.rest.get(Routes.guildMember(this.guild.id, user));
+    const data = await this.client.api.guilds(this.guild.id).members(user).get();
     return this._add(data, cache);
   }
 

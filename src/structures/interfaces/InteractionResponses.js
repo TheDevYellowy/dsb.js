@@ -55,7 +55,7 @@ class InteractionResponses {
   async deferReply(options = {}) {
     if (this.deferred || this.replied) throw new Error('INTERACTION_ALREADY_REPLIED');
     this.ephemeral = options.ephemeral ?? false;
-    await this.client.rest.post(Routes.interactionCallback(this.id, this.token), {
+    await this.client.api.interactions(this.id, this.token).callback.post({
       body: {
         type: InteractionResponseType.DeferredChannelMessageWithSource,
         data: {
@@ -63,7 +63,7 @@ class InteractionResponses {
         },
       },
       auth: false,
-    });
+    })
     this.deferred = true;
 
     return options.fetchReply ? this.fetchReply() : undefined;
@@ -97,7 +97,7 @@ class InteractionResponses {
 
     const { body: data, files } = await messagePayload.resolveBody().resolveFiles();
 
-    await this.client.rest.post(Routes.interactionCallback(this.id, this.token), {
+    await this.client.api.interactions(this.id, this.token).callback.post({
       body: {
         type: InteractionResponseType.ChannelMessageWithSource,
         data,
@@ -179,7 +179,7 @@ class InteractionResponses {
    */
   async deferUpdate(options = {}) {
     if (this.deferred || this.replied) throw new Error('INTERACTION_ALREADY_REPLIED');
-    await this.client.rest.post(Routes.interactionCallback(this.id, this.token), {
+    await this.client.api.interactions(this.id, this.token).callback.post({
       body: {
         type: InteractionResponseType.DeferredMessageUpdate,
       },
@@ -212,7 +212,7 @@ class InteractionResponses {
 
     const { body: data, files } = await messagePayload.resolveBody().resolveFiles();
 
-    await this.client.rest.post(Routes.interactionCallback(this.id, this.token), {
+    await this.client.api.interactions(this.id, this.token).callback.post({
       body: {
         type: InteractionResponseType.UpdateMessage,
         data,

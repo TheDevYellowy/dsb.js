@@ -100,7 +100,7 @@ class BaseGuild extends Base {
    * @returns {Promise<Guild>}
    */
   async fetch() {
-    const data = await this.client.rest.get(Routes.guild(this.id), {
+    const data = await this.client.api.guilds(this.id).get({
       query: new URLSearchParams({ with_counts: true }),
     });
     return this.client.guilds._add(data);

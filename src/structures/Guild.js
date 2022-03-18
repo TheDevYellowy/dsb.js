@@ -547,7 +547,7 @@ class Guild extends AnonymousGuild {
    *   .catch(console.error);
    */
   async fetchIntegrations() {
-    const data = await this.client.rest.get(Routes.guildIntegrations(this.id));
+    const data = await this.client.api.guilds(this.id).integrations.get();
     return data.reduce(
       (collection, integration) => collection.set(integration.id, new Integration(this.client, integration, this)),
       new Collection(),
@@ -560,7 +560,7 @@ class Guild extends AnonymousGuild {
    * @returns {Promise<Collection<string, GuildTemplate>>}
    */
   async fetchTemplates() {
-    const templates = await this.client.rest.get(Routes.guildTemplate(this.id));
+    const templates = await this.client.api.guilds(this.id).templates.get();
     return templates.reduce((col, data) => col.set(data.code, new GuildTemplate(this.client, data)), new Collection());
   }
 
@@ -569,7 +569,7 @@ class Guild extends AnonymousGuild {
    * @returns {Promise<WelcomeScreen>}
    */
   async fetchWelcomeScreen() {
-    const data = await this.client.rest.get(Routes.guildWelcomeScreen(this.id));
+    const data = await this.client.api.guilds(this.id, 'welcome-screen').get();
     return new WelcomeScreen(this, data);
   }
 
@@ -580,7 +580,7 @@ class Guild extends AnonymousGuild {
    * @returns {Promise<GuildTemplate>}
    */
   async createTemplate(name, description) {
-    const data = await this.client.rest.post(Routes.guildTemplates(this.id), { body: { name, description } });
+    const data = await this.client.api.guilds(this.id).templates.post({ body: { name, description } });
     return new GuildTemplate(this.client, data);
   }
 
@@ -589,7 +589,7 @@ class Guild extends AnonymousGuild {
    * @returns {Promise<GuildPreview>}
    */
   async fetchPreview() {
-    const data = await this.client.rest.get(Routes.guildPreview(this.id));
+    const data = await this.client.api.guilds(this.id).preview.get();
     return new GuildPreview(this.client, data);
   }
 
@@ -616,7 +616,7 @@ class Guild extends AnonymousGuild {
     if (!this.features.includes('VANITY_URL')) {
       throw new Error('VANITY_URL');
     }
-    const data = await this.client.rest.get(Routes.guildVanityUrl(this.id));
+    const data = await this.client.api.guilds(this.id, 'vanity-url').get();
     this.vanityURLCode = data.code;
     this.vanityURLUses = data.uses;
 
@@ -633,7 +633,7 @@ class Guild extends AnonymousGuild {
    *   .catch(console.error);
    */
   async fetchWebhooks() {
-    const apiHooks = await this.client.rest.get(Routes.guildWebhooks(this.id));
+    const apiHooks = await this.client.api.guilds(this.id).webhooks.get();
     const hooks = new Collection();
     for (const hook of apiHooks) hooks.set(hook.id, new Webhook(this.client, hook));
     return hooks;
@@ -676,7 +676,7 @@ class Guild extends AnonymousGuild {
    *   .catch(console.error);
    */
   async fetchWidgetSettings() {
-    const data = await this.client.rest.get(Routes.guildWidgetSettings(this.id));
+    const data = await this.client.api.guilds(this.id).widget.get();
     this.widgetEnabled = data.enabled;
     this.widgetChannelId = data.channel_id;
     return {
@@ -727,7 +727,7 @@ class Guild extends AnonymousGuild {
       query.set('action_type', options.type);
     }
 
-    const data = await this.client.rest.get(Routes.guildAuditLog(this.id), { query });
+    const data = await this.client.api.guilds(this.id)['audit-logs'].get({ query });
     return GuildAuditLogs.build(this, data);
   }
 
@@ -826,7 +826,7 @@ class Guild extends AnonymousGuild {
     }
     if (data.preferredLocale) _data.preferred_locale = data.preferredLocale;
     if ('premiumProgressBarEnabled' in data) _data.premium_progress_bar_enabled = data.premiumProgressBarEnabled;
-    const newData = await this.client.rest.patch(Routes.guild(this.id), { body: _data, reason });
+    const newData = await this.client.api.guilds(this.id).patch({ body: _data, reason })
     return this.client.actions.GuildUpdate.handle(newData).updated;
   }
 
@@ -890,13 +890,13 @@ class Guild extends AnonymousGuild {
       };
     });
 
-    const patchData = await this.client.rest.patch(Routes.guildWelcomeScreen(this.id), {
+    const patchData = await this.client.api.guilds(this.id, 'welcome-screen').patch({
       body: {
         welcome_channels,
         description,
         enabled,
       },
-    });
+    })
     return new WelcomeScreen(this, patchData);
   }
 
@@ -1144,7 +1144,7 @@ class Guild extends AnonymousGuild {
    * @returns {Promise<Guild>}
    */
   async setWidgetSettings(settings, reason) {
-    await this.client.rest.patch(Routes.guildWidgetSettings(this.id), {
+    await this.client.api.guilds(this.id).widget.patch({
       body: {
         enabled: settings.enabled,
         channel_id: this.channels.resolveId(settings.channel),
@@ -1165,7 +1165,7 @@ class Guild extends AnonymousGuild {
    */
   async leave() {
     if (this.ownerId === this.client.user.id) throw new Error('GUILD_OWNED');
-    await this.client.rest.delete(Routes.userGuild(this.id));
+    await this.client.api.users('@me').guilds(this.id).delete();
     return this;
   }
 
@@ -1179,7 +1179,7 @@ class Guild extends AnonymousGuild {
    *   .catch(console.error);
    */
   async delete() {
-    await this.client.rest.delete(Routes.guild(this.id));
+    await this.client.api.guilds(this.id).delete();
     return this;
   }
 

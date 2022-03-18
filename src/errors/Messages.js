@@ -33,8 +33,7 @@ const Messages = {
   SHARDING_READY_DISCONNECTED: id => `Shard ${id}'s Client disconnected before becoming ready.`,
   SHARDING_READY_DIED: id => `Shard ${id}'s process exited before its Client became ready.`,
   SHARDING_NO_CHILD_EXISTS: id => `Shard ${id} has no active process or worker.`,
-  SHARDING_SHARD_MISCALCULATION: (shard, guild, count) =>
-    `Calculated invalid shard ${shard} for guild ${guild} with ${count} shards.`,
+  SHARDING_SHARD_MISCALCULATION: (shard, guild, count) => `Calculated invalid shard ${shard} for guild ${guild} with ${count} shards.`,
 
   COLOR_RANGE: 'Color must be within the range 0 - 16777215 (0xFFFFFF).',
   COLOR_CONVERT: 'Unable to convert color to a number.',
@@ -60,8 +59,7 @@ const Messages = {
 
   VOICE_NOT_STAGE_CHANNEL: 'You are only allowed to do this in stage channels.',
 
-  VOICE_STATE_NOT_OWN:
-    'You cannot self-deafen/mute/request to speak on VoiceStates that do not belong to the ClientUser.',
+  VOICE_STATE_NOT_OWN: 'You cannot self-deafen/mute/request to speak on VoiceStates that do not belong to the ClientUser.',
   VOICE_STATE_INVALID_TYPE: name => `${name} must be a boolean.`,
 
   REQ_RESOURCE_TYPE: 'The resource must be a string, Buffer or a valid file stream.',
@@ -106,8 +104,7 @@ const Messages = {
 
   EMOJI_TYPE: 'Emoji must be a string or GuildEmoji/ReactionEmoji',
   EMOJI_MANAGED: 'Emoji is managed and has no Author.',
-  MISSING_MANAGE_EMOJIS_AND_STICKERS_PERMISSION: guild =>
-    `Client must have Manage Emojis and Stickers permission in guild ${guild} to see emoji authors.`,
+  MISSING_MANAGE_EMOJIS_AND_STICKERS_PERMISSION: guild => `Client must have Manage Emojis and Stickers permission in guild ${guild} to see emoji authors.`,
   NOT_GUILD_STICKER: 'Sticker is a standard (non-guild) sticker and has no author.',
 
   REACTION_RESOLVE_USER: "Couldn't resolve the user id to remove from the reaction.",
@@ -123,9 +120,7 @@ const Messages = {
 
   MEMBER_FETCH_NONCE_LENGTH: 'Nonce length must not exceed 32 characters.',
 
-  GLOBAL_COMMAND_PERMISSIONS:
-    'Permissions for global commands may only be fetched or modified by providing a GuildResolvable ' +
-    "or from a guild's application command manager.",
+  GLOBAL_COMMAND_PERMISSIONS: 'Permissions for global commands may only be fetched or modified by providing a GuildResolvable ' + "or from a guild's application command manager.",
   GUILD_UNCACHED_ROLE_RESOLVE: 'Cannot resolve roles from an arbitrary guild, provide an id instead',
 
   INTERACTION_ALREADY_REPLIED: 'The reply to this interaction has already been sent or deferred.',
@@ -133,10 +128,8 @@ const Messages = {
   INTERACTION_EPHEMERAL_REPLIED: 'Ephemeral responses cannot be deleted.',
 
   COMMAND_INTERACTION_OPTION_NOT_FOUND: name => `Required option "${name}" not found.`,
-  COMMAND_INTERACTION_OPTION_TYPE: (name, type, expected) =>
-    `Option "${name}" is of type: ${type}; expected ${expected}.`,
-  COMMAND_INTERACTION_OPTION_EMPTY: (name, type) =>
-    `Required option "${name}" is of type: ${type}; expected a non-empty value.`,
+  COMMAND_INTERACTION_OPTION_TYPE: (name, type, expected) => `Option "${name}" is of type: ${type}; expected ${expected}.`,
+  COMMAND_INTERACTION_OPTION_EMPTY: (name, type) => `Required option "${name}" is of type: ${type}; expected a non-empty value.`,
   COMMAND_INTERACTION_OPTION_NO_SUB_COMMAND: 'No subcommand specified for interaction.',
   COMMAND_INTERACTION_OPTION_NO_SUB_COMMAND_GROUP: 'No subcommand group specified for interaction.',
   AUTOCOMPLETE_INTERACTION_OPTION_NO_FOCUSED_OPTION: 'No focused option for autocomplete interaction.',
@@ -146,6 +139,9 @@ const Messages = {
   NOT_IMPLEMENTED: (what, name) => `Method ${what} not implemented on ${name}.`,
 
   SWEEP_FILTER_RETURN: 'The return value of the sweepFilter function was not false or a Function',
+
+  INVALID_BOT_METHOD: `Bot accounts cannot use this method`,
+  INVALID_USER_METHOD: `User accounts cannot use this method`,
 };
 
 Messages.AuthenticationFailed = Messages.TOKEN_INVALID;

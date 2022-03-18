@@ -275,7 +275,7 @@ class Invite extends Base {
    * @returns {Promise<Invite>}
    */
   async delete(reason) {
-    await this.client.rest.delete(Routes.invite(this.code), { reason });
+    await this.client.api.invites[this.code].delete({ reason });
     return this;
   }
 

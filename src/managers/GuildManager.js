@@ -200,7 +200,7 @@ class GuildManager extends CachedManager {
     }
     systemChannelFlags &&= SystemChannelFlagsBitField.resolve(systemChannelFlags);
 
-    const data = await this.client.rest.post(Routes.guilds(), {
+    const data = await this.client.api.guilds.post({
       body: {
         name,
         icon,
@@ -267,13 +267,13 @@ class GuildManager extends CachedManager {
         if (existing) return existing;
       }
 
-      const data = await this.client.rest.get(Routes.guild(id), {
+      const data = await this.client.api.guilds(id).get({
         query: new URLSearchParams({ with_counts: options.withCounts ?? true }),
-      });
+      })
       return this._add(data, options.cache);
     }
 
-    const data = await this.client.rest.get(Routes.userGuilds(), { query: new URLSearchParams(options) });
+    const data = await this.client.api.users('@me').guilds.get({ query: new URLSearchParams(options) });
     return data.reduce((coll, guild) => coll.set(guild.id, new OAuth2Guild(this.client, guild)), new Collection());
   }
 }

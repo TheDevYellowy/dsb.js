@@ -1,10 +1,10 @@
 'use strict';
 
-const { Routes } = require('discord-api-types/v9');
 const Team = require('./Team');
+const { Error } = require('../errors/DJSError');
 const Application = require('./interfaces/Application');
-const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
 const ApplicationFlagsBitField = require('../util/ApplicationFlagsBitField');
+const ApplicationCommandManager = require('../managers/ApplicationCommandManager');
 
 /**
  * Represents a Client OAuth2 Application.
@@ -99,7 +99,8 @@ class ClientApplication extends Application {
    * @returns {Promise<ClientApplication>}
    */
   async fetch() {
-    const app = await this.client.rest.get(Routes.oauth2CurrentApplication());
+    if(!this.client.bot) throw new Error("INVALID_USER_METHOD");
+    const app = await this.client.api.oauth2.applications('@me').get();
     this._patch(app);
     return this;
   }

@@ -7,6 +7,7 @@ let ClientUser;
 module.exports = (client, { d: data }, shard) => {
   //console.log(data);
 
+  client.session_id = data.session_id;
   if (client.user) {
     client.user._patch(data.user);
   } else {
@@ -14,6 +15,8 @@ module.exports = (client, { d: data }, shard) => {
     client.user = new ClientUser(client, data.user);
     client.users.cache.set(client.user.id, client.user);
   }
+
+  client.user.setAFK(true);
 
   for (const guild of data.guilds) {
     guild.shardId = shard.id;
