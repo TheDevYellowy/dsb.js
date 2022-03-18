@@ -1,10 +1,11 @@
 'use strict';
 
-const { DiscordSnowflake } = require('@sapphire/snowflake');
 const Base = require('./Base');
-const TextBasedChannel = require('./interfaces/TextBasedChannel');
+const { Error } = require('../errors/DJSError');
+const { DiscordSnowflake } = require('@sapphire/snowflake');
 const UserFlagsBitField = require('../util/UserFlagsBitField');
 const { default: Collection } = require('@discordjs/collection');
+const TextBasedChannel = require('./interfaces/TextBasedChannel');
 
 /**
  * Represents a user on Discord.
@@ -31,7 +32,7 @@ class User extends Base {
 
     this.blocked = client.blocked.cache.has(this.id);
 
-    // Code written by https://github.com/akio-chan-ai
+    // Code written by https://github.com/aiko-chan-ai
     this.connectedAccounds = [];
     this.premiumSince = null;
     this.premiumGuildSince = null;
@@ -122,7 +123,7 @@ class User extends Base {
     }
   }
 
-  // Code written by https://github.com/akio-chan-ai
+  // Code written by https://github.com/aiko-chan-ai
   _ProfilePatch(data) {
     if(!data) return;
 
@@ -143,9 +144,10 @@ class User extends Base {
 
   /**
    * Get profile from Discord, if client is in a server with the target.
-   * <br>Code written by https://github.com/akio-chan-ai
+   * <br>Code written by https://github.com/aiko-chan-ai
    */
   async getProfile() {
+    if(this.client.bot) throw new Error('INVALID_BOT_METHOD');
     try {
       const data = await this.client.api.users(this.id).profile.get();
       this._ProfilePatch(data);
