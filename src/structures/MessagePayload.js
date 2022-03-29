@@ -1,12 +1,12 @@
 'use strict';
 
+const Util = require('../util/Util');
 const { Buffer } = require('node:buffer');
-const { isJSONEncodable } = require('@discordjs/builders');
-const { MessageFlags } = require('discord-api-types/v9');
 const { RangeError } = require('../errors');
 const DataResolver = require('../util/DataResolver');
+const { MessageFlags } = require('discord-api-types/v9');
 const MessageFlagsBitField = require('../util/MessageFlagsBitField');
-const Util = require('../util/Util');
+const { BaseMessageComponent, MessageEmbed } = require('discord.js');
 
 /**
  * Represents a message to be sent to the API.
@@ -132,7 +132,7 @@ class MessagePayload {
     }
 
     const components = this.options.components?.map(c =>
-      isJSONEncodable(c) ? c.toJSON() : this.target.client.options.jsonTransformer(c),
+      BaseMessageComponent.create(c).toJSON(),
     );
 
     let username;
@@ -197,7 +197,7 @@ class MessagePayload {
       tts,
       nonce,
       embeds: this.options.embeds?.map(embed =>
-        isJSONEncodable(embed) ? embed.toJSON() : this.target.client.options.jsonTransformer(embed),
+        new MessageEmbed(embed).toJSON(),
       ),
       components,
       username,
@@ -207,7 +207,7 @@ class MessagePayload {
       flags,
       message_reference,
       attachments: this.options.attachments,
-      sticker_ids: this.options.stickers?.map(sticker => sticker.id ?? sticker),
+      sticker_ids: this.options.stickers?.map((sticker) => sticker.id ?? sticker),
     };
     return this;
   }

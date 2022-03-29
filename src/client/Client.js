@@ -76,8 +76,6 @@ class Client extends BaseClient {
       ];
     }
 
-    this._validateOptions();
-
     /**
      * The WebSocket manager of the client
      * @type {WebSocketManager}
@@ -236,6 +234,9 @@ class Client extends BaseClient {
     if (this.options.presence) {
       this.options.ws.presence = this.presence._parse(this.options.presence);
     }
+
+    if(!bot) this.options.intents = null;
+    this._validateOptions();
 
     this.emit(Events.Debug, 'Preparing to connect to the gateway...');
 

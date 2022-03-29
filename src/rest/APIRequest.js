@@ -17,6 +17,9 @@ class APIRequest {
     this.options = options;
     this.retries = 0;
 
+    const { userAgentSuffix } = this.client.options;
+    this.fullUserAgent = `${UserAgent}${userAgentSuffix.length ? `, ${userAgentSuffix.join(', ')}` : ''}`;
+
     let queryString = '';
     if (options.query) {
       const query = Object.entries(options.query)
@@ -27,7 +30,7 @@ class APIRequest {
     this.path = `${path}${queryString && `?${queryString}`}`;
   }
 
-  async make() {
+  make() {
     agent ??= new https.Agent({ ...this.client.options.http.agent, keepAlive: true });
 
     const API =
@@ -38,7 +41,7 @@ class APIRequest {
 
     let headers = {
       ...this.client.options.http.headers,
-      'User-Agent': UserAgent,
+      'User-Agent': this.fullUserAgent,
     };
 
     if (this.options.auth !== false) headers.Authorization = this.rest.getAuth();
@@ -63,6 +66,10 @@ class APIRequest {
     } else if (this.options.data != null) {
       body = JSON.stringify(this.options.data);
       headers['Content-Type'] = 'application/json';
+    } else if (this.options.body != null) {
+      body = new FormData();
+      body.append('payload_json', JSON.stringify(this.options.body));
+      headers = Object.assign(headers, body.getHeaders());
     }
 
     const controller = new AbortController();

@@ -1,7 +1,7 @@
 'use strict';
 
 const process = require('node:process');
-const Transformers = require('./Transformers');
+const JSONbig = require('json-bigint');
 
 /**
  * @typedef {Function} CacheFactory
@@ -71,13 +71,13 @@ class Options extends null {
    */
   static createDefault() {
     return {
+      jsonTransformer: (obj) => JSONbig.stringify(obj),
       waitGuildTimeout: 15_000,
       shardCount: 1,
       makeCache: this.cacheWithLimits(this.defaultMakeCacheSettings),
       messageCacheLifetime: 0,
       messageSweepInterval: 0,
       invalidRequestWarningInterval: 0,
-      intents: 32767,
       partials: [],
       restWsBridgeTimeout: 5_000,
       restRequestTimeout: 15_000,
@@ -97,12 +97,12 @@ class Options extends null {
           $browser: 'Discord iOS',
           $device: 'iPhone14,5 OS 15.2',
         },
-        version: 9,
+        version: 10,
       },
       http: {
         headers: {
           "Accept": "*/*",
-          "Accept-Encoding": "gzip, deflate, br",
+          // "Accept-Encoding": "gzip, deflate, br",
           "Accept-Language": 'en-US,en;q=0.9',
           "Cache-Control": "no-cache",
           "Pragma": "no-cache",
@@ -118,7 +118,7 @@ class Options extends null {
           "Origin": "https://discord.com"
         },
         agent: {},
-        version: 9,
+        version: 10,
         api: 'https://discord.com/api',
         cdn: 'https://cdn.discordapp.com',
         invite: 'https://discord.gg',
