@@ -142,6 +142,12 @@ const Messages = {
 
   INVALID_BOT_METHOD: `Bot accounts cannot use this method`,
   INVALID_USER_METHOD: `User accounts cannot use this method`,
+  INVALID_LOCALE: 'Unable to select this location',
+  FOLDER_NOT_FOUND: 'Folder not found',
+  FOLDER_POSITION_INVALID: 'Invalid server index',
+  APPLICATION_ID_INVALID: 'That user isn\'t BOT',
+  INVALID_NITRO: 'Invalid Nitro Code',
+  MESSAGE_ID_NOT_FOUND: 'Message ID not found',
 };
 
 Messages.AuthenticationFailed = Messages.TOKEN_INVALID;

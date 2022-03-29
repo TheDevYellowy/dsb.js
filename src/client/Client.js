@@ -1,36 +1,38 @@
 'use strict';
 
+
 const process = require('node:process');
-const { Collection } = require('@discordjs/collection');
-const { OAuth2Scopes, Routes } = require('discord-api-types/v9');
+const Status = require('../util/Status');
+const Events = require('../util/Events');
+const Options = require('../util/Options');
 const BaseClient = require('./BaseClient');
-const ActionsManager = require('./actions/ActionsManager');
-const ClientVoiceManager = require('./voice/ClientVoiceManager');
-const WebSocketManager = require('./websocket/WebSocketManager');
-const { Error, TypeError, RangeError } = require('../errors');
-const BaseGuildEmojiManager = require('../managers/BaseGuildEmojiManager');
-const ChannelManager = require('../managers/ChannelManager');
-const GuildManager = require('../managers/GuildManager');
-const UserManager = require('../managers/UserManager');
-const FriendsManager = require('../managers/FriendsManager');
-const BlockedManager = require('../managers/BlockedManager');
-const ShardClientUtil = require('../sharding/ShardClientUtil');
-const ClientPresence = require('../structures/ClientPresence');
-const GuildPreview = require('../structures/GuildPreview');
-const GuildTemplate = require('../structures/GuildTemplate');
+const Sweepers = require('../util/Sweepers');
 const Invite = require('../structures/Invite');
+const Widget = require('../structures/Widget');
+const Webhook = require('../structures/Webhook');
+const DataResolver = require('../util/DataResolver');
 const { Sticker } = require('../structures/Sticker');
+const UserManager = require('../managers/UserManager');
+const { Collection } = require('@discordjs/collection');
+const GuildManager = require('../managers/GuildManager');
 const StickerPack = require('../structures/StickerPack');
 const VoiceRegion = require('../structures/VoiceRegion');
-const Webhook = require('../structures/Webhook');
-const Widget = require('../structures/Widget');
-const DataResolver = require('../util/DataResolver');
-const Events = require('../util/Events');
 const IntentsBitField = require('../util/IntentsBitField');
-const Options = require('../util/Options');
+const ActionsManager = require('./actions/ActionsManager');
+const GuildPreview = require('../structures/GuildPreview');
+const ChannelManager = require('../managers/ChannelManager');
+const FriendsManager = require('../managers/FriendsManager');
+const BlockedManager = require('../managers/BlockedManager');
+const GuildTemplate = require('../structures/GuildTemplate');
+const { Error, TypeError, RangeError } = require('../errors');
+const ShardClientUtil = require('../sharding/ShardClientUtil');
+const ClientPresence = require('../structures/ClientPresence');
+const { OAuth2Scopes, Routes } = require('discord-api-types/v9');
+const ClientVoiceManager = require('./voice/ClientVoiceManager');
+const WebSocketManager = require('./websocket/WebSocketManager');
 const PermissionsBitField = require('../util/PermissionsBitField');
-const Status = require('../util/Status');
-const Sweepers = require('../util/Sweepers');
+const BaseGuildEmojiManager = require('../managers/BaseGuildEmojiManager');
+const ClientSettingsManager = require('../managers/ClientSettingsManager');
 
 /**
  * The main hub for interacting with the Discord API, and the starting point for any bot.
@@ -108,8 +110,21 @@ class Client extends BaseClient {
      * @type {UserManager}
      */
     this.users = new UserManager(this);
+
+    /**
+     * @type {FriendsManager}
+     */
     this.friends = new FriendsManager(this);
+
+    /**
+     * @type {BlockedManager}
+     */
     this.blocked = new BlockedManager(this);
+
+    /**
+     * @type {ClientSettingsManager}
+     */
+    this.settings = new ClientSettingsManager(this);
 
     /**
      * All of the guilds the client is currently handling, mapped by their ids -
@@ -235,7 +250,7 @@ class Client extends BaseClient {
       this.options.ws.presence = this.presence._parse(this.options.presence);
     }
 
-    if(!bot) this.options.intents = null;
+    if(!bot) this.options.intents = 0;
     this._validateOptions();
 
     this.emit(Events.Debug, 'Preparing to connect to the gateway...');

@@ -102,7 +102,7 @@ class Options extends null {
       http: {
         headers: {
           "Accept": "*/*",
-          // "Accept-Encoding": "gzip, deflate, br",
+          "Accept-Encoding": "gzip, deflate, br",
           "Accept-Language": 'en-US,en;q=0.9',
           "Cache-Control": "no-cache",
           "Pragma": "no-cache",

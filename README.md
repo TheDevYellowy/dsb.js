@@ -6,8 +6,8 @@
   <br />
   <p>
     <a href="https://discord.gg/3makcFd2m4"><img src="https://img.shields.io/discord/222078108977594368?color=5865F2&logo=discord&logoColor=white" alt="Discord server" /></a>
-    <a href="https://www.npmjs.com/package/discordjs-selfbot"><img src="https://img.shields.io/npm/v/discordjs-selfbot?style=flat-square" alt="npm version" /></a>
-    <a href="https://www.npmjs.com/package/discordjs-selfbot"><img src="https://img.shields.io/npm/dt/discordjs-selfbot?style=flat-square" alt="npm downloads" /></a>
+    <a href="https://www.npmjs.com/package/dsb.js"><img src="https://img.shields.io/npm/v/dsb.js?style=flat-square" alt="npm version" /></a>
+    <a href="https://www.npmjs.com/package/dsb.js"><img src="https://img.shields.io/npm/dt/dsb.js?style=flat-square" alt="npm downloads" /></a>
   </p>
 </div>
 
@@ -35,10 +35,11 @@ client.on('ready', async () => {
   console.log(`${client.user.username}  >>  [${client.guilds.cache.size}] guilds || [${client.friends.cache.size}] friends`);
 })
 
-client.login('token');
+client.login('token', false);
 ```
 
 ## Links
 - [Documentation](https://discord.js.org/#/docs/discord.js/stable/general/welcome)
-- [GitHub](https://github.com/TheDevYellowy/discordjs-selfbot)
+- [Additions](Additions.md)
+- [GitHub](https://github.com/TheDevYellowy/dsb.js)
 - [Discord](https://discord.gg/3makcFd2m4)
