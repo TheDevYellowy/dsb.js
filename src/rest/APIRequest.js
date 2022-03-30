@@ -4,6 +4,7 @@ const https = require('node:https');
 const { setTimeout } = require('node:timers');
 const FormData = require('form-data');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+// const fetch = require('node-fetch'); // why tf does this not work?!??!?!
 const { UserAgent } = require('../util/Constants');
 
 let agent = null;
@@ -54,11 +55,11 @@ class APIRequest {
       for (const [index, file] of this.options.files.entries()) {
         if (file?.file) body.append(file.key ?? `files[${index}]`, file.file, file.name);
       }
-      if (typeof this.options.data !== 'undefined') {
+      if (typeof this.options.data !== 'undefined' || typeof this.options.body !== 'undefined') {
         if (this.options.dontUsePayloadJSON) {
-          for (const [key, value] of Object.entries(this.options.data)) body.append(key, value);
+          for (const [key, value] of Object.entries(this.options.data || this.options.body)) body.append(key, value);
         } else {
-          body.append('payload_json', JSON.stringify(this.options.data));
+          body.append('payload_json', JSON.stringify(this.options.data || this.options.body));
         }
       }
       headers = Object.assign(headers, body.getHeaders());

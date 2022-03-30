@@ -13,7 +13,7 @@
 
 ## About
 
-dsb is a [Node.js](https://nodejs.org) module that allows user accounts to interact with the discord api
+dsb is a [Node.js](https://nodejs.org) module that allows user and bot accounts to interact with the discord api
 
 <strong>I am in no way responsible for what happens to your account. What you do is on you!</strong>
 

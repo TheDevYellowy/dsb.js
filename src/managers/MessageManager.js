@@ -3,7 +3,7 @@
 const { Collection } = require('@discordjs/collection');
 const { Routes } = require('discord-api-types/v9');
 const CachedManager = require('./CachedManager');
-const { TypeError } = require('../errors');
+const { TypeError, Error } = require('../errors');
 const { Message } = require('../structures/Message');
 const MessagePayload = require('../structures/MessagePayload');
 const Util = require('../util/Util');
@@ -218,8 +218,20 @@ class MessageManager extends CachedManager {
       if (existing && !existing.partial) return existing;
     }
 
-    const data = await this.client.api.channels(this.channel.id).messages(messageId).get();
-    return this._add(data, cache);
+    if (this.client.bot) {
+      const data = await this.client.api.channels(this.channel.id).messages(messageId).get();
+      return this._add(data, cache);
+    } else {
+      const data = (await this.client.api.guilds[this.channel.guild.id].messages.search.get({
+        query: {
+          channel_id: this.channel.id,
+          max_id: new BigInt(messageId+1).toString(),
+          min_id: new BigInt(messageId-1).toString(),
+        },
+      })).messages[0]
+      if (data) return this._add(data[0], cache);
+      else throw new Error("MESSAGE_ID_NOT_FOUND");
+    }
   }
 
   async _fetchMany(options = {}, cache) {

