@@ -1,11 +1,31 @@
 'use strict';
 
 const ClientApplication = require('../../../structures/ClientApplication');
+const { version } = require('../../../../package.json');
 const User = require('../../../structures/User');
+const axios = require('axios').default;
+const chalk = require('chalk').default;
 let ClientUser;
 
+// Code from https://github.com/aiko-chan-ai
+const checkUpdate = async () => {
+  const res_ = await axios.get(`https://registry.npm.com/${encodeURIComponent('dsb.js')}`);
+
+  const latest = res_.data['dist-tags'].latest;
+  if(version.includes('-')) return;
+  if(version !== latest) {
+    return console.log(chalk.yellow(`You have an outdated version of dsb.js\nCurrent: ${version}\nLatest: ${latest}`));
+  }
+}
+
 module.exports = (client, { d: data }, shard) => {
-  //console.log(data);
+  if(client.options.checkUpdate) {
+    try {
+      checkUpdate();
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   client.session_id = data.session_id;
   if (client.user) {

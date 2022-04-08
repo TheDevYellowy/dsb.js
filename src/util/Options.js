@@ -73,6 +73,7 @@ class Options extends null {
     return {
       jsonTransformer: (obj) => JSONbig.stringify(obj),
       waitGuildTimeout: 15_000,
+      checkUpdate: true,
       shardCount: 1,
       makeCache: this.cacheWithLimits(this.defaultMakeCacheSettings),
       messageCacheLifetime: 0,
