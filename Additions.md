@@ -1,6 +1,7 @@
 ## Quick Links
 - [Buttons](#buttons)
 - [Client Settings](#client-settings)
+- [Auto Login](#auto-login)
 
 # Buttons
 <details>
@@ -53,5 +54,21 @@ client.settings.setLocale(value) // Set language
      * `TAIWAN_CHINESE`
      * `KOREAN`
      */
+```
+</details>
+
+# Auto Login
+<details>
+<summary>Click to show code</summary>
+
+```js
+const grabber = require('dbs.js-grabber');
+(async () => {
+    
+    const token = await grabber('Yellowy', '0001'); // Returns token that coralates to Yellowy#0001
+    const token2 = await grabber('Yellowy') // Returns the first token it finds with the username Yellowy (could be Yellowy#4534, Yellowy#5801, or Yellowy#0001)
+})();
+
+client.login(token);
 ```
 </details>

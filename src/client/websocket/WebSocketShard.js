@@ -611,12 +611,24 @@ class WebSocketShard extends EventEmitter {
     this.status = Status.Identifying;
 
     // Clone the identify payload and assign the token and shard info
-    const d = {
-      ...client.options.ws,
-      token: client.token,
-    };
+    let d;
 
-    this.debug(`[IDENTIFY] Shard ${this.id}/${client.options.shardCount} with intents: 32767`);
+    if(client.bot) {
+      d = {
+        ...client.options.ws,
+        intents: IntentsBitField.resolve(client.options.intents),
+        token: client.token,
+        shard: [this.id, Number(client.options.shardCount)]
+      }
+      this.debug(`[IDENTIFY] Shard ${this.id}/${client.options.shardCount} with intents: 32767`);
+    } else {
+      d = {
+        ...client.options.ws,
+        token: client.token
+      }
+      this.debug(`[IDENTIFY] User Account`)
+    }
+
     this.send({ op: GatewayOpcodes.Identify, d }, true);
   }
 

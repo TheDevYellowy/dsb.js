@@ -97,7 +97,7 @@ class Options extends null {
           $browser: 'Discord iOS',
           $device: 'iPhone14,5 OS 15.2',
         },
-        version: 10,
+        version: 9,
       },
       http: {
         headers: {
@@ -118,7 +118,7 @@ class Options extends null {
           "Origin": "https://discord.com"
         },
         agent: {},
-        version: 10,
+        version: 9,
         api: 'https://discord.com/api',
         cdn: 'https://cdn.discordapp.com',
         invite: 'https://discord.gg',

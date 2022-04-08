@@ -1,6 +1,5 @@
 'use strict';
 
-
 const process = require('node:process');
 const Status = require('../util/Status');
 const Events = require('../util/Events');
